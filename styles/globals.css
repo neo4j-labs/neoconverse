@@ -1,0 +1,37 @@
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+
+body {
+  margin: 0px;
+}
+
+.jsonview-code {
+    display: block;
+    padding: 0.5rem;
+    background-color: rgb(40, 44, 52);
+    color: rgb(136, 198, 190);
+    overflow-x: scroll;
+    border-radius: 5px;
+  }
+
+  .jsonview-line { white-space: nowrap; }
+  .jsonview-hi-line { white-space: nowrap; background-color: rgb(80, 80, 95); }
+
+  .jsonview-str { color: rgb(121, 182, 242); }
+  .jsonview-num { color: rgb(255, 255, 200); }
+  .jsonview-bool { color: rgb(197, 165, 197); }
+  .jsonview-null { color: rgb(197, 165, 197); }
+  .jsonview-prop { color: rgb(250, 200, 99); }
+
+  .jsonview-ln {
+    display: inline-block;
+    padding-right: 1rem;
+    color: rgb(178, 178, 178);
+    text-align: right;
+    user-select: none;
+  }
+
+  .model-image {
+    position: inherit !important;
+  }
