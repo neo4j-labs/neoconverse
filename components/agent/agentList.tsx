@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useState, useEffect } from "react";
 
 import Image from "next/image";
+import Chip from '@mui/material/Chip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -257,7 +258,16 @@ const AgentList = (props) => {
                                     <Image width={40} height={40} alt={`${agentInfo?.title} icon`} src={agentInfo?.icon} />
                                 </ListItemIcon>
                                 <ListItemText
-                                    primary={agentInfo?.title}
+                                    primary={
+                                        <>
+                                            <span style={{paddingRight: '8px' }}>{agentInfo?.title}</span>
+                                            {/* <div> */}
+                                            {agentInfo?.userDefined === true
+                                                    ? <Chip label="Local" color="success" variant="outlined" size="small" />
+                                                    : <Chip label="Remote" color="primary" variant="outlined" size="small" />
+                                                }
+                                            {/* </div> */}
+                                        </>}
                                     secondary={
                                         <React.Fragment>
                                             <Typography
