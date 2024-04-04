@@ -1,6 +1,6 @@
 
 export enum LLMProvider { 
-    OPENAI = "OPENAI", 
-    GCP = "GCP", 
-    AWS = "AWS"
+    OPENAI = "Open AI", 
+    GCP = "Google Vertex AI", 
+    AWS = "AWS Bedrock"
 }

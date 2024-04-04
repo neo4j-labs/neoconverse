@@ -13,7 +13,7 @@ const handler = async (req: Request): Promise<Response> => {
       model:string;
     };
 
-    return talkToLLM({ prompt, provider, model, llmKeys: process.env });
+    return talkToLLM({ prompt, provider:process.env.DEFUALT_PROVIDER, model: process.env.DEFUALT_MODEL, llmKeys: process.env });
 }
 
 export default handler;

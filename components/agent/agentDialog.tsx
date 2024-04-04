@@ -74,9 +74,13 @@ interface DialogData {
   userDefined: boolean,
   aiService: string,
   openAIKey: string,
+  openAIModel: string, 
   googleAPIKey: string,
+  googleModel: string,
   awsAccessKeyId: string,
   awsSecretAccessKey: string,
+  awsModel: string, 
+  aimodel: string
 }
 
 interface AgentDialogProps {
@@ -102,6 +106,11 @@ const aiOptions = ['Open AI', 'Google Vertex AI', 'AWS Bedrock'];
     googleAPIKey: '',
     awsAccessKeyId: '',
     awsSecretAccessKey: '',
+    openAIModel: '', 
+    googleModel: '',
+    awsModel: '',
+    aimodel: ''
+  
   };
 
   const [settings, setSettings] = React.useState({ ...defaultSettings });
@@ -130,6 +139,11 @@ const aiOptions = ['Open AI', 'Google Vertex AI', 'AWS Bedrock'];
         googleAPIKey: '',
         awsAccessKeyId: '',
         awsSecretAccessKey: '',
+        openAIModel: '', 
+        googleModel: '',
+        awsModel: '',
+        aimodel: ''
+      
     }
 
     initAgent.connection = (agentData?.connection) ? agentData.connection : {...emptyConnection};
@@ -183,13 +197,19 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
       case 'Open AI':
         return (
           <Grid item xs={12}>
-            <TextField label="OpenAI Key" name="openAIKey" value={data.openAIKey} onChange={handleChange} fullWidth />
+            <Stack direction="row" spacing={2}>
+              <TextField label="OpenAI Key" name="openAIKey" value={data.openAIKey} onChange={handleChange} fullWidth />
+              <TextField label="OpenAI model" name="openAIModel" value={data.openAIModel} onChange={handleChange} fullWidth />
+            </Stack>
           </Grid>
         );
       case 'Google Vertex AI':
         return (
           <Grid item xs={12}>
-            <TextField label="Google API Key" name="googleAPIKey" value={data.googleAPIKey} onChange={handleChange} fullWidth />
+            <Stack direction="row" spacing={2}>
+              <TextField label="Google API Key" name="googleAPIKey" value={data.googleAPIKey} onChange={handleChange} fullWidth />
+              <TextField label="Google model" name="googleModel" value={data.googleModel} onChange={handleChange} fullWidth />
+            </Stack>
           </Grid>
         );
       case 'AWS Bedrock':
@@ -198,6 +218,7 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
             <Stack direction="row" spacing={2}>
               <TextField label="AWS_ACCESS_KEY_ID" name="awsAccessKeyId" value={data.awsAccessKeyId} onChange={handleChange} fullWidth />
               <TextField label="AWS_SECRET_ACCESS_KEY" name="awsSecretAccessKey" type="password" value={data.awsSecretAccessKey} onChange={handleChange} fullWidth />
+              <TextField label="MODEL" name="awsModel" value={data.awsModel} onChange={handleChange} fullWidth />
             </Stack>
           </Grid>
         );
@@ -324,7 +345,7 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
                   label="Protocol"
                   type="text"
                   fullWidth
-                  value={data.connection.protocol}
+                  value={data.connection?.protocol}
                   onChange={handleConnectionChange}
                 />
                 <TextField
@@ -335,7 +356,7 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
                   label="Hostname"
                   type="text"
                   fullWidth
-                  value={data.connection.host}
+                  value={data.connection?.host}
                   onChange={handleConnectionChange}
                 />
                 <TextField
@@ -346,7 +367,7 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
                   label="Port"
                   type="text"
                   fullWidth
-                  value={data.connection.port}
+                  value={data.connection?.port}
                   onChange={handleConnectionChange}
                 />
               </Stack>
@@ -358,7 +379,7 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
                 label="Database(optional)"
                 type="text"
                 fullWidth
-                value={data.connection.database}
+                value={data.connection?.database}
                 onChange={handleConnectionChange}
               />
               <TextField
@@ -369,7 +390,7 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
                 label="Username"
                 type="text"
                 fullWidth
-                value={data.connection.username}
+                value={data.connection?.username}
                 onChange={handleConnectionChange}
               />
               <TextField
@@ -380,7 +401,7 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
                 label="Password"
                 type="password"
                 fullWidth
-                value={data.connection.password}
+                value={data.connection?.password}
                 onChange={handleConnectionChange}
 />
             <Stack direction="row" spacing={5} justifyContent="space-between" sx={{ marginBottom: 2, marginRight: 2 }}>
@@ -433,7 +454,7 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
                       label="Protocol"
                       type="text"
                       fullWidth
-                      value={data.convoConnection.protocol}
+                      value={data.convoConnection?.protocol}
                       onChange={handleConvoConnectionChange}
                     />
                     <TextField
@@ -444,7 +465,7 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
                       label="Hostname"
                       type="text"
                       fullWidth
-                      value={data.convoConnection.host}
+                      value={data.convoConnection?.host}
                       onChange={handleConvoConnectionChange}
                     />
                     <TextField
@@ -455,7 +476,7 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
                       label="Port"
                       type="text"
                       fullWidth
-                      value={data.convoConnection.port}
+                      value={data.convoConnection?.port}
                       onChange={handleConvoConnectionChange}
                     />
                   </Stack>
@@ -467,7 +488,7 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
                     label="Database(optional)"
                     type="text"
                     fullWidth
-                    value={data.convoConnection.database}
+                    value={data.convoConnection?.database}
                     onChange={handleConvoConnectionChange}
                   />
                   <TextField
@@ -478,7 +499,7 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
                     label="Username"
                     type="text"
                     fullWidth
-                    value={data.convoConnection.username}
+                    value={data.convoConnection?.username}
                     onChange={handleConvoConnectionChange}
                   />
                   <TextField
@@ -489,7 +510,7 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
                     label="Password"
                     type="password"
                     fullWidth
-                    value={data.convoConnection.password}
+                    value={data.convoConnection?.password}
                     onChange={handleConvoConnectionChange}
                   />
                 </div> : null}

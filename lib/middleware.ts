@@ -2,25 +2,28 @@ import { runCypher } from "../components/database/callNeo";
 import { talkToLLM } from "../components/llm/llmCommunication";
 import { LLMProvider } from "../components/llm/llmConstants";
 import { getAgentByName } from "../agents/agentRegistry";
+import { LLMDetails } from "./type";
 
 export async function GenerateContent(
     invokeFromClient:boolean,
-    provider:string,
-    model:string,
     prompt:string,
     generateCypher:boolean,
-    respondwithChart:boolean
+    respondwithChart:boolean,
+    llmDetails: LLMDetails
 ){
     let response ;
-    const llmRequestParams = {provider:provider, model:model, prompt:prompt }
+    const llmRequestParams = {provider:llmDetails.provider, model:llmDetails.model, prompt:prompt }
     let llmResponse = null;
     if (invokeFromClient) {
         console.log('talkToLLM');
         // TODO: get this from localstorage / agent settings once Kumar moves it over
         llmRequestParams.llmKeys = {
-            OPENAI_API_KEY: process.env.NEXT_PUBLIC_OPENAI_API_KEY
+            OPENAI_API_KEY: llmDetails.openAIKey,
+            GOOGLE_API_KEY: llmDetails.googleAPIKey,
+            AWS_ACCESS_KEY_ID: llmDetails.awsAccessKeyId,
+            AWS_SECRET_ACCESS_KEY: llmDetails.awsSecretAccessKey
         };
-        if (provider === LLMProvider.OPENAI) {
+        if (llmDetails.provider === LLMProvider.OPENAI) {
             llmRequestParams.llmFlags = { dangerouslyAllowBrowser: true }
         }
         llmResponse = talkToLLM(llmRequestParams);
@@ -116,10 +119,18 @@ async function cypherCleanup(generatedCypher:string){
     // Remove prepended cypher query text from LLM response
     generatedCypher = generatedCypher.toString().trim().replace('Cypher Query:','');
     generatedCypher = generatedCypher.toString().trim().replace('cypher query:','');
+    generatedCypher = generatedCypher.toString().trim().replace('cypher:','');
+    generatedCypher = generatedCypher.toString().trim().replace('Cypher:','');
+    generatedCypher = generatedCypher.toString().trim().replace('cypher','');
+    generatedCypher = generatedCypher.toString().trim().replace('Cypher','');
 
     // Remove markdown quotes
     generatedCypher = generatedCypher.toString().trim().replaceAll('```','');
 
+    if(generatedCypher.startsWith('"')&& generatedCypher.endsWith('"'))
+    {
+        generatedCypher = generatedCypher.slice(1, -1);
+    }
     // LLM generated cypher sometimes doesn't have right directionalities in cypher pattern, so removing directions in cypher except known variable length patterns
     // Includes the relationhships where relationship directionalities changes the semantic meaning of the traversal
     if (!(generatedCypher.includes('LEADS_TO') || generatedCypher.includes('NEXT') || generatedCypher.includes('PREVIOUS'))) {

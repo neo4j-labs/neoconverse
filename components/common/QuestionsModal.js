@@ -59,7 +59,8 @@ export default function QuestionsModal({ visible, questions,
       {"Sample Questions"}
       </DialogTitle>
       <DialogContent>
-        <List style={{color: "#181414", fontSize: "1rem", display: "flex", flexFlow: "row"}} dense={true}>
+        <List style={{color: "#181414", fontSize: "1rem"}} dense={true}>
+        {/* display: "flex", flexFlow: "row" */}
             {(questions && questions.length > 0) ?
               questions.sort(sortQuestions).map((question, index) => {
                 return (
@@ -80,8 +81,8 @@ export default function QuestionsModal({ visible, questions,
                       primary={
                         <div style={{ color: "#181414", fontSize: "16px"}}>
                           {/* <div className="questionNumber" style = {{width: "40px"}} >{`${index+1}.`}</div> */}
-                          <div style = {{width: "40px"}} >{`${index+1}.`}</div>
-                          <div>{question.question}</div>
+                          <div style = {{width: "80%"}} >{`${index+1}.`} {" "+question.question}</div>
+                          {/* <div>{question.question}</div> */}
                         </div>
                       }
                     />

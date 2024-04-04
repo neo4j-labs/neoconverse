@@ -39,7 +39,10 @@ const AgentList = (props) => {
           promptParts: {
             dataModel: '',
             fewshot: []
-          }
+          },
+          openAIModel: '', 
+          googleModel: '',
+          awsModel: ''
       });;
 
     type QAPair = {
@@ -69,7 +72,10 @@ const AgentList = (props) => {
         schemaDiagram: string;
         connection: Connection,
         promptParts: PromptParts,
-        userDefined: boolean
+        userDefined: boolean,
+        openAIModel: string, 
+        googleModel: string,
+        awsModel: string
     }
 
     interface AgentData {
@@ -78,7 +84,7 @@ const AgentList = (props) => {
         icon: string,
         key: string,
         order: number,
-        promptParts: PropptParts,
+        promptParts: promptParts,
         title: string
     }
 
@@ -101,6 +107,23 @@ const AgentList = (props) => {
         setShowModel(false);
     };
 
+    const exportFromLocalStorage = () => {
+        const data = localStorage.getItem('myData');
+        if (data) {
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'exportedData.json';
+            document.body.appendChild(a); // Required for Firefox
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('Data exported from localStorage to file');
+        } else {
+            alert('No data in localStorage to export');
+        }
+    };
+    
     const handleOpenDialog = () => {
 
         setAgentData({ 
@@ -219,40 +242,38 @@ const AgentList = (props) => {
                                 key={agentInfo?.key}
                                 onClick={(event) => handleListItemClick(event, agentInfo?.key)} selected={selectedAgentKey === agentInfo?.key}
                                 secondaryAction={
-                                    <Stack direction="column" spacing={2} >
-                                                {
-                                                (agentInfo?.userDefined === true) ?
-                                                    <div>
-                                                        <Tooltip title="Edit Agent">
-                                                            <EditIcon color="#606060"
-                                                                onClick={async (e) => {
-                                                                    //processDomainChange(agentInfo.key);
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-                                                                    await handleEditClick(agentInfo?.key);
-                                                                    }}
-                                                                >
-                                                                <Polyline />
-                                                            </EditIcon>
-                                                        </Tooltip>
-                                                        <Tooltip title="Delete Agent">
-                                                            <DeleteIcon sx={{ color: '#979797' }}
-                                                                onClick={async (e) => {
-                                                                    //processDomainChange(agentInfo.key);
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-                                                                    await handleDeleteClick(agentInfo?.key);
-                                                                    }}
-                                                                >
-                                                                <Polyline />
-                                                            </DeleteIcon>
-                                                        </Tooltip>
-                                                    </div>
-                                                    :<div/>
-                                                }
-                                    </Stack>
-                                }
-                            >
+                                        <Stack direction="row" spacing={2} sx={{paddingLeft:80}} >
+                                                    {
+                                                    (agentInfo?.userDefined === true) ?
+                                                        <div>
+                                                            <Tooltip title="Edit Agent">
+                                                                <EditIcon sx={{color: "#606060"}}
+                                                                    onClick={async (e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        await handleEditClick(agentInfo?.key);
+                                                                        }}
+                                                                    >
+                                                                    <Polyline />
+                                                                </EditIcon>
+                                                            </Tooltip>
+                                                            <Tooltip title="Delete Agent">
+                                                                <DeleteIcon sx={{ color: '#979797' }}
+                                                                    onClick={async (e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        await handleDeleteClick(agentInfo?.key);
+                                                                        }}
+                                                                    >
+                                                                    <Polyline />
+                                                                </DeleteIcon>
+                                                            </Tooltip>
+                                                        </div>
+                                                        :<div/>
+                                                    }
+                                        </Stack>
+                                    }
+                                >
                                 <ListItemIcon>
                                     <Image width={40} height={40} alt={`${agentInfo?.title} icon`} src={agentInfo?.icon} />
                                 </ListItemIcon>

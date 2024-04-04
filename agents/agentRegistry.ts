@@ -48,8 +48,8 @@ export const initAgents = async () => {
 
 export const getRemoteAgents = async () => {
     let result = await runNeoApi(NeoDatabaseConstants.BackendDatabaseKey, FrontEndAgentQuery);
-    let agents = await Promise.all(result.result.map(async (row) =>  {
-        let agentInfo = row.agentInfo;
+    let agents = await Promise.all(result?.result?.map(async (row) =>  {
+        let agentInfo = row?.agentInfo;
         let promptProvider = PredefinedPromptProviders[agentInfo.key];
         //console.log('agentInfo.key: ', agentInfo.key);
         if (promptProvider) {
@@ -65,11 +65,12 @@ export const getRemoteAgents = async () => {
 export const getLocalAgents = () => localAgents;
 
 export const saveLocalAgent = (newAgent: any) => {
-    const existingIndex = localAgents.findIndex(data => data.title === newAgent.title);
+    const existingIndex = localAgents?.findIndex(data => data.title === newAgent.title)
 
-    if (existingIndex !== -1) {
+    if (existingIndex && existingIndex !== -1) {
         localAgents[existingIndex] = newAgent;
     } else {
+        localAgents = [];
         localAgents.push(newAgent);
     }
 

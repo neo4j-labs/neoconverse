@@ -17,7 +17,7 @@ export const talkToLLM = async ({ prompt, provider, model, llmKeys, llmFlags = {
 
         case LLMProvider.GCP:
     
-            const GOOGLE_API_KEY = llmKeys[GOOGLE_API_KEY]!;
+            const GOOGLE_API_KEY = llmKeys["GOOGLE_API_KEY"]!;
 
             // Create an Google GenAI client
             const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY);
