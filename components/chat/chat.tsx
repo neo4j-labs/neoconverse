@@ -265,7 +265,16 @@ const Chat = (props) => {
             <TextField ref={howCanIHelpRef} fullWidth id="standard-basic" label="How can i help you today ?" variant="standard"
                 sx={{ fontWeight: 400, fontSize: 15 }}
                 multiline
-                onChange={(e) => setUserInput(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                        StreamResponse(e)
+                    }
+                }}
+                onChange={(e) => {
+                    if (e.key !== "Enter" || e.shiftKey) {
+                        setUserInput(e.target.value)
+                    } 
+                }}
                 value={userInput}
                 InputProps={{
                     endAdornment: (
