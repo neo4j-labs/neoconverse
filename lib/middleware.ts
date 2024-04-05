@@ -53,6 +53,7 @@ export async function GenerateContent(
 
 export async function ExecuteCypher(
     invokeFromClient:boolean,
+    isSaveConvo:boolean,
     agentName:string, 
     cypherQuery:string, 
     options: {},
@@ -63,7 +64,8 @@ export async function ExecuteCypher(
         if (!agent) {
             throw new Error(`Can't find agent '${agentName}'`);
         }
-        let { port, host, protocol, database, username, password } = agent.connection;
+        let { port, host, protocol, database, username, password } = !isSaveConvo ? agent.connection:agent.convoConnection ;
+
         protocol = protocol.match(/:\/\/$/) ? protocol : `${protocol}://`;
         let databaseInfo = {
             hostUrl: `${protocol}${host}:${port}`,
