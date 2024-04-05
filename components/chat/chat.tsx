@@ -56,7 +56,9 @@ const Chat = (props) => {
         setBioRef,
         styleProps,
         StreamResponse,
-        userInput
+        userInput,
+        isUserDefined,
+        llmKey
     } = props;
 
     styleProps = styleProps || {};
@@ -202,6 +204,8 @@ const Chat = (props) => {
                                                         setContext={setContext}
                                                         setLoading={setLoading}
                                                         setMessages={setMessages}
+                                                        isUserDefined = {isUserDefined}
+                                                        llmKey = {llmKey}
                                                     />
                                                 </div>
                                             )}

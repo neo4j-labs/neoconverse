@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import CodeMirror from '@uiw/react-codemirror';
 import { cypher as CypherMode } from "@codemirror/legacy-modes/mode/cypher";
 import { StreamLanguage } from "@codemirror/language";
-
+import { GenerateContent, ExecuteCypher } from '../../lib/middleware';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 const CypherEditor = (props) => {
@@ -17,7 +17,9 @@ const CypherEditor = (props) => {
         setLoading,
         setMessages,
         scrollToBios,
-        runCypher
+        runCypher,
+        isUserDefined,
+        llmKey
     } = props;
 
     const style = {
@@ -103,46 +105,65 @@ const CypherEditor = (props) => {
           console.log('Prompt \n' , prompt);
        
           if (!messages[index].isChart ) {
-          const response1 = await fetch("/api/generate", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Cache-Control": "no-cache,no-store",
-            },
-            body: JSON.stringify({
-              prompt,
-            }),
-          });
-    
-          // .then(response1 => response1.json())
-    
-          if (!response1.ok) {
-            throw new Error(response1.statusText);
-          }
+
+          let response1 = await GenerateContent(isUserDefined, prompt, false, messages[index].isChart, llmKey)
           
-          // This data is a ReadableStream
-          const data1 = response1.body;
-          if (!data1) {
-            return;
-          }
-    
           const userData = messages.slice(0);
-    
           setMessages([...userData]);
-    
-          const reader1 = data1.getReader();
-          const decoder1 = new TextDecoder();
-          let done1 = false;
+          userData[userData.length-1].text = "";
+          const reader = response1?.body?.getReader();
           let responseText1 = ""
-          userData[index].text ="";
-          while (!done1) {
-            const { value, done: doneReading } = await reader1.read();
-            done1 = doneReading;
-            const chunkValue = decoder1.decode(value);
-            setContext((prev) => prev + chunkValue);
-            !userData[index-1].isChart ?  userData[index].text = userData[index].text + chunkValue : ""
-            responseText1+=chunkValue;
+          while (true) {
+              const { done, value } = await reader?.read();
+              let chunkValue = new TextDecoder().decode(value);
+              setContext((prev) => prev + chunkValue);
+              !userData[index-1].isChart ?  userData[userData.length-1].text = userData[userData.length-1].text + chunkValue : ""
+              responseText1+=chunkValue;
+              if (done) {
+                  break;
+              }
           }
+
+          // const response1 = await fetch("/api/generate", {
+          //   method: "POST",
+          //   headers: {
+          //     "Content-Type": "application/json",
+          //     "Cache-Control": "no-cache,no-store",
+          //   },
+          //   body: JSON.stringify({
+          //     prompt,
+          //   }),
+          // });
+    
+          // // .then(response1 => response1.json())
+    
+          // if (!response1.ok) {
+          //   throw new Error(response1.statusText);
+          // }
+          
+          // // This data is a ReadableStream
+          // const data1 = response1.body;
+          // if (!data1) {
+          //   return;
+          // }
+    
+          // const userData = messages.slice(0);
+    
+          // setMessages([...userData]);
+    
+          // const reader1 = data1.getReader();
+          // const decoder1 = new TextDecoder();
+          // let done1 = false;
+          // let responseText1 = ""
+          // userData[index].text ="";
+          // while (!done1) {
+          //   const { value, done: doneReading } = await reader1.read();
+          //   done1 = doneReading;
+          //   const chunkValue = decoder1.decode(value);
+          //   setContext((prev) => prev + chunkValue);
+          //   !userData[index-1].isChart ?  userData[index].text = userData[index].text + chunkValue : ""
+          //   responseText1+=chunkValue;
+          // }
           // console.log('responseText1',responseText1)
           setLoading(false);
           let chartConfStr =responseText1.toString().trim().startsWith("{")? responseText1.toString().trim().replace(';',''): "{"+responseText1.toString().trim().replace(';','') ;
@@ -156,72 +177,94 @@ const CypherEditor = (props) => {
           }
         }
         else{
-          const payload1: OpenAIStreamPayload = {
-            // model:"gpt-35-turbo",
-            // model:"gpt-3.5-turbo",
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.0,
-            top_p: 1,
-            frequency_penalty: 0,
-            presence_penalty: 0,
-            max_tokens: 3000,
-            stream: true,
-            n: 1,
-          };
-          let responseText1 = ''
-          await fetchEventSource (process.env.NEXT_PUBLIC_AZURE_OPENAI_ENDPOINT  as string,{
-            method:"POST",
-            headers: {
-              // "Accept":"text/event-stream",
-              "Content-type":"application/json",
-              // "Content-type":"text/event-stream",
-              Connection: 'keep-alive',
-              'Cache-Control': 'no-cache',
-              "api-key":process.env.NEXT_PUBLIC_AZURE_OPENAI_KEY  as string
-            },
-            body: JSON.stringify(payload1),
-            // aysnc onopen(res) {
-            //   console.log(res);
-            // },
-            onmessage(event) {
-              const data = JSON.parse(event.data);
-              const text :string = data.choices[0].delta.content;
-              typeof text !== 'undefined' && text !== null? responseText1+=text:responseText1 = responseText1;
-              // responseText+=text;
-              const userDataForceRefresh = messages.slice(0);
-              typeof text !== 'undefined' && text !== null? !userDataForceRefresh[index-1].isChart ?  userDataForceRefresh[index].text = userDataForceRefresh[index].text + text : "": responseText1 = responseText1;
-    
-              // console.log(text);
-    
-              setMessages([...userDataForceRefresh]);
-    
-            },
-            onclose() {
-              console.log("connection closed by the server");
-              setLoading(false);
-            },
-            onerror(err) {
-              console.log("there is an error from server", err);
-              messages[index].text = "Sorry, you have reached the max token limit, i can still answer new questions if its fit withing the amount of content i can produce"
-              messages[index].chartData = "" ;
-              const userDataForceRefresh = messages.slice(0);
-              setMessages([...userDataForceRefresh]);
+
+          let response2 = await GenerateContent(isUserDefined, prompt, false, messages[index].isChart, llmKey)
+
+          const reader = response2?.body?.getReader();
+
+          let userDataForceRefresh = messages.slice(0);
+          let result="";
+          let responseText1=""
+          userDataForceRefresh[userDataForceRefresh.length-1].text = "";
+          while (true) {
+            const { done, value } = await reader?.read();
+            let chunkValue = new TextDecoder().decode(value);
+            responseText1+=chunkValue;
+            setContext((prev) => prev + chunkValue);
+            if (done) {
+                break;
             }
           }
-          )
+          !userDataForceRefresh[index-1].isChart ?  userDataForceRefresh[index].text = userDataForceRefresh[index].text + result : "";
+
+          setMessages([...userDataForceRefresh]);
+
+          // const payload1: OpenAIStreamPayload = {
+          //   // model:"gpt-35-turbo",
+          //   // model:"gpt-3.5-turbo",
+          //   messages: [{ role: "user", content: prompt }],
+          //   temperature: 0.0,
+          //   top_p: 1,
+          //   frequency_penalty: 0,
+          //   presence_penalty: 0,
+          //   max_tokens: 3000,
+          //   stream: true,
+          //   n: 1,
+          // };
+          // let responseText1 = ''
+          // await fetchEventSource (process.env.NEXT_PUBLIC_AZURE_OPENAI_ENDPOINT  as string,{
+          //   method:"POST",
+          //   headers: {
+          //     // "Accept":"text/event-stream",
+          //     "Content-type":"application/json",
+          //     // "Content-type":"text/event-stream",
+          //     Connection: 'keep-alive',
+          //     'Cache-Control': 'no-cache',
+          //     "api-key":process.env.NEXT_PUBLIC_AZURE_OPENAI_KEY  as string
+          //   },
+          //   body: JSON.stringify(payload1),
+          //   // aysnc onopen(res) {
+          //   //   console.log(res);
+          //   // },
+          //   onmessage(event) {
+          //     const data = JSON.parse(event.data);
+          //     const text :string = data.choices[0].delta.content;
+          //     typeof text !== 'undefined' && text !== null? responseText1+=text:responseText1 = responseText1;
+          //     // responseText+=text;
+          //     const userDataForceRefresh = messages.slice(0);
+          //     typeof text !== 'undefined' && text !== null? !userDataForceRefresh[index-1].isChart ?  userDataForceRefresh[index].text = userDataForceRefresh[index].text + text : "": responseText1 = responseText1;
+    
+          //     // console.log(text);
+    
+          //     setMessages([...userDataForceRefresh]);
+    
+          //   },
+          //   onclose() {
+          //     console.log("connection closed by the server");
+          //     setLoading(false);
+          //   },
+          //   onerror(err) {
+          //     console.log("there is an error from server", err);
+          //     messages[index].text = "Sorry, you have reached the max token limit, i can still answer new questions if its fit withing the amount of content i can produce"
+          //     messages[index].chartData = "" ;
+          //     const userDataForceRefresh = messages.slice(0);
+          //     setMessages([...userDataForceRefresh]);
+          //   }
+          // }
+          // )
     
           let chartConfStr =responseText1.toString().trim().startsWith("{")? responseText1.toString().trim().replace(';',''): "{"+responseText1.toString().trim().replace(';','') ;
           console.log(chartConfStr);
-          if (respondWithChart && neoResponse.result.length !=0){
+          if (userDataForceRefresh[index-1].isChart && neoResponse.result.length !=0){
             chartConfStr = JSON.stringify(eval("(" + chartConfStr.replace(';','') + ")"));
             messages[index].chartData = JSON.parse(chartConfStr);
           }
-          else if (respondWithChart && neoResponse.result.length ==0){
+          else if (userDataForceRefresh[index-1].isChart && neoResponse.result.length ==0){
             messages[index].chartData = "";
             messages[index].text = "Sorry, i'm not trained yet to help charting this request, please contact your admin to train me with more samples"
           }
           
-          const userDataForceRefresh = messages.slice(0);
+          userDataForceRefresh = messages.slice(0);
           setMessages([...userDataForceRefresh]);
         }
           console.log(messages[index].chartData);
@@ -233,39 +276,59 @@ const CypherEditor = (props) => {
           var prompt = 'Articulate that you couldnt find any relevant information for the request, may be you are not yet to trained to handle this request, but you are continously improving and ask user to try ask the question differently';
     
           console.log('localContext',prompt);
-          const response = await fetch("/api/generate", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              prompt,
-            }),
-          });
-      
-          if (!response.ok) {
-            throw new Error(response.statusText);
-          }
-      
-          // This data is a ReadableStream
-          const data = response.body;
-          if (!data) {
-            return;
-          }
-          const reader = data.getReader();
-          const decoder = new TextDecoder();
-          let done = false;
-          let responseText = ''
-          while (!done) {
-            const { value, done: doneReading } = await reader.read();
-            done = doneReading;
-            const chunkValue = decoder.decode(value);
-            //setGeneratedBios((prev) => prev + chunkValue);
+
+          let responseText2 = await GenerateContent(isUserDefined, prompt, false, messages[index].isChart, llmKey)
+
+          const reader = responseText2?.body?.getReader();
+          messages[index].text = "";
+          let result="";
+          while (true) {
+            const { done, value } = await reader?.read();
+            let chunkValue = new TextDecoder().decode(value);
+            result+=chunkValue;
             setContext((prev) => prev + chunkValue);
             messages[index].text = messages[index].text + chunkValue
-            responseText+=chunkValue;
+            if (done) {
+                break;
+            }
           }
-          // scrollToBios();
+  
+
+          // const response = await fetch("/api/generate", {
+          //   method: "POST",
+          //   headers: {
+          //     "Content-Type": "application/json",
+          //   },
+          //   body: JSON.stringify({
+          //     prompt,
+          //   }),
+          // });
+      
+          // if (!response.ok) {
+          //   throw new Error(response.statusText);
+          // }
+      
+          // // This data is a ReadableStream
+          // const data = response.body;
+          // if (!data) {
+          //   return;
+          // }
+          // const reader = data.getReader();
+          // const decoder = new TextDecoder();
+          // let done = false;
+          // let responseText = ''
+          // messages[index].text = "";
+
+          // while (!done) {
+          //   const { value, done: doneReading } = await reader.read();
+          //   done = doneReading;
+          //   const chunkValue = decoder.decode(value);
+          //   //setGeneratedBios((prev) => prev + chunkValue);
+          //   setContext((prev) => prev + chunkValue);
+          //   messages[index].text = messages[index].text + chunkValue
+          //   responseText+=chunkValue;
+          // }
+          scrollToBios();
           messages[messages.length-1].chartData = "";
           const userDataForceRefresh = messages.slice(0);
           setMessages([...userDataForceRefresh]);

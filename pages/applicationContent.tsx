@@ -18,7 +18,9 @@ import { GenerateContent, ExecuteCypher } from '../lib/middleware';
 import * as prompts from '../lib/prompt';
 import { getUser } from './api/authHelper';
 import { track, Events } from '../components/common/tracking';
-
+import { LLMDetails } from '../lib/type';
+import {SAVE_CONVO_CYPHER} from '../lib/cypherQuery'
+import { userInfo } from 'os';
 const HeaderHeight = 135;
 
 type Message =  {
@@ -53,6 +55,8 @@ const ApplicationContent: NextPage = () => {
   const [anchorElShowModel, setAnchorElShowModel] = React.useState<HTMLButtonElement | null>(null);
   const [currentDomainImage, setCurrentDomainImage] = useState("/realtorchat.png");
   const [openAIModel,setOpenAIModel] = useState('gpt=4');
+  const [llmKey, setLLMKey] = useState();
+  const [isUserDefinedAgent, setIsUserDefinedAgent] = useState();
   const [sampleQuestions, setSampleQuestions] = useState([
     { question: 'Question 1', priority: 1 },
     { question: 'Question 2', priority: 2 },
@@ -87,6 +91,35 @@ const ApplicationContent: NextPage = () => {
       cypher:  ""
     }])
 
+  const getLLMKey = async(currentAgent) =>{
+    const llmKey = (() => {
+      const provider = currentAgent.aiService; // Directly use aiService if it's expected to be a string or undefined
+      switch (provider) {
+        case 'Open AI':
+          return {
+            openAIKey: currentAgent.openAIKey,
+            provider: currentAgent.aiService,
+            model: currentAgent.openAIModel,
+          };
+        case 'Google Vertex AI':
+          return {
+            googleAPIKey: currentAgent.googleAPIKey,
+            provider: currentAgent.aiService,
+            model: currentAgent.googleModel,
+          };
+        case 'AWS Bedrock':
+          return {
+            awsAccessKeyId: currentAgent.awsAccessKeyId,
+            awsSecretAccessKey: currentAgent.awsSecretAccessKey,
+            provider: currentAgent.aiService,
+            model: currentAgent.awsModel,
+          };
+        default:
+          return {};
+      }
+    })();
+    return llmKey;
+  }
   const handleListItemClick = async (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
     key: string,
@@ -94,6 +127,17 @@ const ApplicationContent: NextPage = () => {
     setSelectedAgentKey(key);
     await processDomainChange(key);    
   };
+
+  function extractQuestions(input:string) {
+    const asks = input?.split("Ask:").slice(1); // Split by "Ask:" and remove the first element (empty string before the first "Ask:")
+    return asks?.map((ask, index) => {
+      const question = ask?.split("Cypher Query:")[0].trim().replace("Ask:",""); // Isolate the question
+      return {
+          question: question,
+          priority: index + 1 // Assign priority based on order
+      };
+  });
+}
 
   const processDomainChange = async (key: string) => {
       let agent:any = agents.find(agent => agent?.key === key);
@@ -105,6 +149,14 @@ const ApplicationContent: NextPage = () => {
         setCurrentDomainImage(agent.icon);
         setDbSchemaImageUrl(agent.dataModelPath);
         setOpenAIModel(process.env.NEXT_PUBLIC_SMALL_CONTEXT_OPENAI_MODEL as string);
+        let keys = await getLLMKey(agent)
+        setLLMKey(keys);
+        setIsUserDefinedAgent(agent.userDefined)
+        if(!agent.userDefined)
+          setSampleQuestions(extractQuestions(agent.promptParts.fewshot));
+          else{
+            setSampleQuestions({})
+          }
       } else {
         throw new Error(`Unable to find agent with key '${key}'`);
       }
@@ -200,12 +252,22 @@ const ApplicationContent: NextPage = () => {
       saveConvoOn: (isUserDefined) ? currentAgent.saveConvo : process.env.NEXT_PUBLIC_SAVE_CONVERSATION,
       isChart: respondWithChart,
       isUserDefined: isUserDefined,
-      key: (isUserDefined) ? 'UserDefined' : currentAgent.key,
+      key: (isUserDefined) ? 'UserDefined' : currentAgent?.key,
       // TODO: provider defined below for neo4j agents should come from the agentRegistry
-      aiService: (isUserDefined) ? currentAgent.aiService : "Open AI"
+      aiService: (isUserDefined) ? currentAgent?.aiService : "Open AI"
     });      
 
-    // Allows context chaining but slow performance and reaches max limit sooner
+    
+    // Filter the array to exclude the first element and any element where isChart is true
+    const filteredMessages = messages.filter((message, index) => index !== 0 && !message.isChart);
+
+    // Slice the array to get the last two conversation after filtering
+    const lastTwoMessages = filteredMessages.slice(-6);
+
+    // Concatenate the text of the last two messages, with a newline character in between
+    const convoHistory = lastTwoMessages.map(message => message.text).join("\n");
+
+
     // var prompt = initialContext +' \n'+ context +' \n'+ additionContext +'\nCreate a cypher query for '+ userInput+'""" \n cypher query = ';
 
     // Form the prompt template
@@ -215,9 +277,13 @@ const ApplicationContent: NextPage = () => {
     let fewShotStr = (Array.isArray(fewShot)) 
       ? fewShot.map(x => `\nAsk:\n${x.question}\nCypher Query:\n${x.answer}`).join('\n')
       : fewShot;
-    var prompt = initialContext  +' \n'+ fewShotStr+'\n'+additionContext +'\nAsk :'+ userInput+'\nCypher Query:  ';
+    // var prompt = initialContext  +' \n'+ fewShotStr+'\n'+additionContext +'\nAsk :'+ userInput+'\nCypher Query:  ';
+    var prompt = initialContext  +' \n'+ fewShotStr+'\n'+ convoHistory +'\nAsk :'+ userInput+'\nCypher Query:  ';
+
     console.log('Prompt for Cypher generation \n' , prompt);
-    let responseText = await GenerateContent(isUserDefined, "OPENAI", "gpt-4", prompt, true, respondWithChart)
+    let provider =  currentAgent?.userDefined ? currentAgent?.aiService : "Open AI";
+    
+    let responseText = await GenerateContent(isUserDefined, prompt, true, respondWithChart, llmKey)
     console.log('responseText \n' , responseText);
 
     var query = "";
@@ -231,16 +297,16 @@ const ApplicationContent: NextPage = () => {
 
     try{
         console.log('Cypher Query Generated by LLM \n' , query);
-        var neoResponse:any = await ExecuteCypher(isUserDefined, selectedAgentKey, query, {});
+        var neoResponse:any = await ExecuteCypher(isUserDefined, false,  selectedAgentKey, query, {});
         console.log('Result from Neo4j' , neoResponse.result);
 
         var prompt = ""
         if(!respondWithChart){
-            if(neoResponse.result.length ===0)
+            if(neoResponse?.result?.length ===0)
             {
               prompt = prompts.GRACEFUL_MESSAGE_PROMPT;
             }
-            else if(neoResponse.result.length > 500){
+            else if(neoResponse?.result?.length > 500){
               prompt = prompts.GRACEFUL_HUGE_TEXT_PROMPT;
             }
             else{
@@ -249,7 +315,7 @@ const ApplicationContent: NextPage = () => {
         }
         else{
           
-          if(neoResponse.result.length ===0)
+          if(neoResponse?.result?.length ===0)
           {
             prompt = prompts.GRACEFUL_MESSAGE_PROMPT;
           }
@@ -260,7 +326,7 @@ const ApplicationContent: NextPage = () => {
 
         console.log('Prompt \n' , prompt);
      
-        let finalResponse = await GenerateContent(isUserDefined, "OPENAI", "gpt-4", prompt, false, respondWithChart)
+        let finalResponse = await GenerateContent(isUserDefined, prompt, false, respondWithChart, llmKey)
         let finalMessage = ""
         if(!respondWithChart)
         {
@@ -306,9 +372,20 @@ const ApplicationContent: NextPage = () => {
 
         console.log('localContext',prompt);
 
-        let response = await GenerateContent(isUserDefined, "OPENAI", "gpt-4", prompt, false, false)
-        setContext((prev) => prev + response);
-        userData[userData.length-1].text = response.toString();
+        let response = await GenerateContent(isUserDefined, prompt, false, false, llmKey)
+        const reader = response?.body?.getReader();
+        let result = ""
+        while (true) {
+            const { done, value } = await reader?.read();
+            let chunkValue = new TextDecoder().decode(value);
+            result+=chunkValue;
+            setContext((prev) => prev + chunkValue);
+            !respondWithChart ?  userData[userData.length-1].text = userData[userData.length-1].text + chunkValue : ""
+            if (done) {
+                break;
+            }
+        }
+        userData[userData.length-1].text = result.toString();
 
         scrollToBios();
         userData[userData.length-1].chartData = "";
@@ -316,26 +393,52 @@ const ApplicationContent: NextPage = () => {
         setMessages([...userDataForceRefresh]);
         setLoading(false);
       }
-      if (process.env.NEXT_PUBLIC_SAVE_CONVERSATION === 'true') {
-        save_convo(userData[userData.length-1].conversation_id,
-          userInput,
-          userData[userData.length-1].cypher,
-          'gpt-4',
-          user?.name,
-          userData[userData.length-1].text,
-          null,
-          null,
-          user?.email,
-          selectedAgentKey,
-          'Backend')
+
+      // This is to save conversation when save conversation is enabled. 
+      // For local agent, the coversation will be saved to database configured via agent information screen.
+      // For remote agent, only neo4j.com users conversation will be saved. 
+      // These saved conversation can be used for future tuning and to provide better few shots examples and evaluting the LLM responses
+      let saveConvoCypher = userData[userData.length-1].cypher.replace(/"/g, '\\"');;
+      let saveConvoResposne = userData[userData.length-1].text.replace(/"/g, '\\"');;
+      let cypherQuery = SAVE_CONVO_CYPHER(userData[userData.length-1].conversation_id,
+        userInput,
+        saveConvoCypher,
+        'gpt-4',
+        user?.name,
+        saveConvoResposne,
+        null,
+        null,
+        user?.email,
+        selectedAgentKey,
+        )
+      if ((!isUserDefinedAgent && process.env.NEXT_PUBLIC_SAVE_CONVERSATION === 'true' && getDomainFromEmail(user?.email)==='neo4j.com' && user?.email !== "anon.neoconverse@neo4j.com")) {
+       
+          ExecuteCypher(true, true, 'Backend',cypherQuery,{})
+      }
+      else if(isUserDefinedAgent && currentAgent.saveConvo === true)
+      {
+          ExecuteCypher(true, true, currentAgent.title, cypherQuery,{})
       }
   };
 
+  function getDomainFromEmail(email: string): string {
+    // Split the email string into parts using "@" as the delimiter
+    const parts = email.split("@");
+
+    // Check if the split operation resulted in at least 2 parts
+    if (parts.length >= 2) {
+        // The domain part is always the last part after splitting by "@"
+        return parts[parts.length - 1];
+    } else {
+        // Return a message or throw an error if "@" is not found in the email
+        throw new Error("Invalid email address");
+    }
+  }
   async function runCypher(cypher:string){
     //  var resp = await runNeoApi(selectedAgentKey, cypher,{})
      console.log('Cypher Query Generated by LLM \n' , cypher);
      let isUserDefined = getAgentByKey(selectedAgentKey)?.userDefined;
-     var neoResponse:any = await ExecuteCypher(isUserDefined, selectedAgentKey, cypher, {});
+     var neoResponse:any = await ExecuteCypher(isUserDefined, false,  selectedAgentKey, cypher, {});
      console.log('Result from Neo4j' , neoResponse.result);
      //var resp = await run(cypher)
     return neoResponse
@@ -387,6 +490,8 @@ const ApplicationContent: NextPage = () => {
                     }}
                     StreamResponse={StreamResponse}
                     userInput={userInput}
+                    llmKey = {llmKey}
+                    isUserDefined = {isUserDefinedAgent}
                   >
                   </Chat>
                 </Grid>
