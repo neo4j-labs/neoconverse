@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
@@ -70,8 +70,14 @@ const Chat = (props) => {
     const [questionsModalVisible, setQuestionsModalVisible] = useState(false);
     const [schemaModalVisible, setSchemaModalVisible] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
+    const [initialized, setInitialized] = useState(false);
 
-    setBioRef(bioRef);
+    useEffect(() => {
+        if (!initialized) {
+            setBioRef(bioRef);
+            setInitialized(true);
+        }
+    }, [initialized])
 
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
@@ -132,7 +138,7 @@ const Chat = (props) => {
             }}>
                 {messages.map((m, i) => (
                     // <ChatMessage key={`message-${i}`} message={m} />
-                    <div className="chat-message">
+                    <div className="chat-message" key={i}>
                         <ListItem divider sx={{ width: "100%" }}>
                             <ListItemAvatar>
                                 <Image width={30} height={30} alt="Neo4j" src={m.avatar} />

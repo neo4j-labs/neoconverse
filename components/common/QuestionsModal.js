@@ -64,7 +64,7 @@ export default function QuestionsModal({ visible, questions,
             {(questions && questions.length > 0) ?
               questions.sort(sortQuestions).map((question, index) => {
                 return (
-                  <ListItem
+                  <ListItem key={index}
                     secondaryAction={
                       <Tooltip title="Use this question">
                         <IconButton edge="end" aria-label="useThisQuestion"
