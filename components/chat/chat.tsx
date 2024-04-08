@@ -138,13 +138,8 @@ const Chat = (props) => {
             }}>
                 {messages.map((m, i) => (
                     // <ChatMessage key={`message-${i}`} message={m} />
-<<<<<<< HEAD
-                    <div className="chat-message">
-                        <ListItem  key={`message-${i}`} divider sx={{ width: "100%" }}>
-=======
                     <div className="chat-message" key={i}>
                         <ListItem divider sx={{ width: "100%" }}>
->>>>>>> f6b003806ec5ddfb344ac5f7d0a9118950126771
                             <ListItemAvatar>
                                 <Image width={30} height={30} alt="Neo4j" src={m.avatar} />
                             </ListItemAvatar>
