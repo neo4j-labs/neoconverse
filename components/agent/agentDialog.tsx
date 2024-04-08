@@ -318,6 +318,9 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
             label="Agent Name"
             type="text"
             fullWidth
+            // inputProps={
+            //   { readOnly: true, }
+            // }
             value={data.title}
             onChange={handleChange}
           />

@@ -41,15 +41,15 @@ const CypherEditor = (props) => {
     async function reSubmitCypher(index:any) {
     
         try{
-          console.log('Cypher Query \n' , messages[index].cypher);
+          // console.log('Cypher Query \n' , messages[index].cypher);
           const query = messages[index].cypher;
           var neoResponse:any = await runCypher(query);
-          console.log('Neo4j Result' , neoResponse.result);
+          // console.log('Neo4j Result' , neoResponse.result);
     
           let jsonResult1:any = messages[index-1].text+":"+JSON.stringify(neoResponse.result)
     
           var prompt = ""
-          console.log("neoResponse.result).trim()",JSON.stringify(neoResponse.result).trim());
+          // console.log("neoResponse.result).trim()",JSON.stringify(neoResponse.result).trim());
           if(!messages[index].isChart){
               if(neoResponse.result.length ===0)
               {
@@ -102,7 +102,7 @@ const CypherEditor = (props) => {
               `
             }
           }
-          console.log('Prompt \n' , prompt);
+          // console.log('Prompt \n' , prompt);
        
           if (!messages[index].isChart ) {
 
@@ -254,7 +254,7 @@ const CypherEditor = (props) => {
           // )
     
           let chartConfStr =responseText1.toString().trim().startsWith("{")? responseText1.toString().trim().replace(';',''): "{"+responseText1.toString().trim().replace(';','') ;
-          console.log(chartConfStr);
+          // console.log(chartConfStr);
           if (userDataForceRefresh[index-1].isChart && neoResponse.result.length !=0){
             chartConfStr = JSON.stringify(eval("(" + chartConfStr.replace(';','') + ")"));
             messages[index].chartData = JSON.parse(chartConfStr);
@@ -267,15 +267,15 @@ const CypherEditor = (props) => {
           userDataForceRefresh = messages.slice(0);
           setMessages([...userDataForceRefresh]);
         }
-          console.log(messages[index].chartData);
+          // console.log(messages[index].chartData);
           scrollToBios();
         }
         catch (neo4jError){
-          console.log('neo4jError',neo4jError)
+          // console.log('neo4jError',neo4jError)
           // var prompt =  userInput;
           var prompt = 'Articulate that you couldnt find any relevant information for the request, may be you are not yet to trained to handle this request, but you are continously improving and ask user to try ask the question differently';
     
-          console.log('localContext',prompt);
+          // console.log('localContext',prompt);
 
           let responseText2 = await GenerateContent(isUserDefined, prompt, false, messages[index].isChart, llmKey)
 

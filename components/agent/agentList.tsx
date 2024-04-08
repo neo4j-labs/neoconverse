@@ -9,9 +9,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Polyline, AddCircleRounded } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
-import { Button, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Button, Typography } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { pink, red } from '@mui/material/colors';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -210,105 +211,282 @@ const AgentList = (props) => {
                 </div>
             </Stack>
             <AgentDialog open={isDialogOpen} agentData = {agentData} onSave={handleSaveAgentData} onClose={handleCloseDialog}></AgentDialog>
-            <List sx={{
-                width: '100%',
-                height: `calc(100vh - ${styleProps.HeaderHeight}px)`,
-                overflow: "auto",
-                border: 0,
-                borderTop: '2px dotted lightgray',
-                marginTop: '3px',
-                borderColor: 'grey.300',
-                bgcolor: 'background.paper',
-                "&& .Mui-selected": {
-                    backgroundColor: "#bdbdbd", paddingLeft: "20px"
-                }
-            }}
-            >
-                {(agents && agents.length === 0) ?
+            <Accordion sx={{ marginTop: '4px', '&.Mui-expanded': { marginTop: '4px' }}} >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography
                         sx={{
-                            display: 'inline',
-                            color: "rgba(0, 0, 0, 0.6)",
-                            fontWeight: 400,
-                            fontSize: 15,
-                            fontFamily: "sans-serif",
-                            paddingLeft: '10px'
-                        }}
-                    >{agentsAreLoading ? 'Loading...' : 'No agents configured'}
-                    </Typography>
-                    :
-                    agents?.map(agentInfo => {
-                        return (
-                            <ListItem button
-                                key={agentInfo?.key}
-                                onClick={(event) => handleListItemClick(event, agentInfo?.key)} selected={selectedAgentKey === agentInfo?.key}
-                                secondaryAction={
-                                        <Stack direction="row" spacing={2} sx={{paddingLeft:80}} >
-                                                    {
-                                                    (agentInfo?.userDefined === true) ?
-                                                        <div>
-                                                            <Tooltip title="Edit Agent">
-                                                                <EditIcon sx={{color: "#606060"}}
-                                                                    onClick={async (e) => {
-                                                                        e.preventDefault();
-                                                                        e.stopPropagation();
-                                                                        await handleEditClick(agentInfo?.key);
-                                                                        }}
-                                                                    >
-                                                                    <Polyline />
-                                                                </EditIcon>
-                                                            </Tooltip>
-                                                            <Tooltip title="Delete Agent">
-                                                                <DeleteIcon sx={{ color: '#979797' }}
-                                                                    onClick={async (e) => {
-                                                                        e.preventDefault();
-                                                                        e.stopPropagation();
-                                                                        await handleDeleteClick(agentInfo?.key);
-                                                                        }}
-                                                                    >
-                                                                    <Polyline />
-                                                                </DeleteIcon>
-                                                            </Tooltip>
-                                                        </div>
-                                                        :<div/>
-                                                    }
-                                        </Stack>
-                                    }
-                                >
-                                <ListItemIcon>
-                                    <Image width={40} height={40} alt={`${agentInfo?.title} icon`} src={agentInfo?.icon} />
-                                </ListItemIcon>
-                                <ListItemText
-                                    primary={
-                                        <>
-                                            <span style={{paddingRight: '8px' }}>{agentInfo?.title}</span>
-                                            {/* <div> */}
-                                            {agentInfo?.userDefined === true
-                                                    ? <Chip label="Local" color="success" variant="outlined" size="small" />
-                                                    : <Chip label="Remote" color="primary" variant="outlined" size="small" />
-                                                }
-                                            {/* </div> */}
-                                        </>}
-                                    secondary={
-                                        <React.Fragment>
-                                            <Typography
-                                                sx={{ display: 'inline', color: "rgba(0, 0, 0, 0.6)", fontWeight: 400, fontSize: 15, fontFamily: "sans-serif" }}
-                                                component="span"
-                                                variant="caption"
-                                                color="text.primary"
-                                            >
-                                                {agentInfo?.description}
-                                            </Typography>
-                                            {" "}
-                                        </React.Fragment>
-                                    }
-                                >
-                                </ListItemText>
-                            </ListItem>
-                        )
-                    })
-                }
-            </List>
+                        display: 'inline',
+                        color: "rgba(0, 0, 0, 0.6)",
+                        fontWeight: 600,
+                        fontSize: 18,
+                        fontFamily: "sans-serif",
+                        paddingLeft: '10px'
+                    }}
+                    >Explore Predefined Agents</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                    <List sx={{
+                        width: '100%',
+                        // height: `calc(100vh - ${styleProps.HeaderHeight}px)`,
+                        overflow: "auto",
+                        border: 0,
+                        borderTop: '2px dotted lightgray',
+                        // marginTop: '3px',
+                        borderColor: 'grey.300',
+                        bgcolor: 'background.paper',
+                        "&& .Mui-selected": {
+                            backgroundColor: "#bdbdbd", paddingLeft: "20px"
+                        }
+                    }}
+                    >
+                        {(agents && agents.length === 0) ?
+                            <Typography
+                                sx={{
+                                    display: 'inline',
+                                    color: "rgba(0, 0, 0, 0.6)",
+                                    fontWeight: 400,
+                                    fontSize: 15,
+                                    fontFamily: "sans-serif",
+                                    paddingLeft: '10px'
+                                }}
+                            >{agentsAreLoading ? 'Loading...' : 'No agents configured'}
+                            </Typography>
+                            :
+                            agents.filter(agentInfo => !agentInfo.userDefined)?.map(agentInfo => {
+                                return (
+                                    <ListItem button
+                                        key={agentInfo?.key}
+                                        onClick={(event) => handleListItemClick(event, agentInfo?.key)} selected={selectedAgentKey === agentInfo?.key}
+                                        secondaryAction={
+                                                <Stack direction="row" spacing={2} sx={{paddingLeft:80}} >
+                                                            {
+                                                            (agentInfo?.userDefined === true) ?
+                                                                <div>
+                                                                    <Tooltip title="Edit Agent">
+                                                                        <EditIcon sx={{color: "#606060"}}
+                                                                            onClick={async (e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+                                                                                await handleEditClick(agentInfo?.key);
+                                                                                }}
+                                                                            >
+                                                                            <Polyline />
+                                                                        </EditIcon>
+                                                                    </Tooltip>
+                                                                    <Tooltip title="Delete Agent">
+                                                                        <DeleteIcon sx={{ color: '#979797' }}
+                                                                            onClick={async (e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+                                                                                await handleDeleteClick(agentInfo?.key);
+                                                                                }}
+                                                                            >
+                                                                            <Polyline />
+                                                                        </DeleteIcon>
+                                                                    </Tooltip>
+                                                                    {
+                                                                        (agentInfo?.schema.trim() === "") ?
+                                                                            <Tooltip  
+                                                                            title={
+                                                                                <div style={{ whiteSpace: 'pre-line' }}>{`One of the following critical information is missing for this agent \n
+                                                                                    1. Schema \n
+                                                                                    2. Database connection information \n
+                                                                                    3. Gen AI API configuration\n\
+                                                                                    
+                                                                                    Please provide these information for the agent to work as expected`}</div>
+                                                                            }
+                                                                            >
+                                                                                <ErrorOutlineIcon sx={{ color: '#f50057' }}
+                                                                                    // onClick={async (e) => {
+                                                                                    //     e.preventDefault();
+                                                                                    //     e.stopPropagation();
+                                                                                    //     await handleDeleteClick(agentInfo?.key);
+                                                                                    //     }}
+                                                                                    >
+                                                                                    <Polyline />
+                                                                                </ErrorOutlineIcon>
+                                                                            </Tooltip>:<div/>
+                                                                        }
+                                                                </div>
+                                                                :<div/>
+                                                            }
+                                                </Stack>
+                                            }
+                                        >
+                                        <ListItemIcon>
+                                            <Image width={40} height={40} alt={`${agentInfo?.title} icon`} src={agentInfo?.icon} />
+                                        </ListItemIcon>
+                                        <ListItemText
+                                            primary={
+                                                <>
+                                                    <span style={{paddingRight: '8px' }}>{agentInfo?.title}</span>
+                                                    {/* <div> */}
+                                                    {agentInfo?.userDefined === true
+                                                            ? <Chip label="Local" color="success" variant="outlined" size="small" />
+                                                            : <Chip label="Remote" color="primary" variant="outlined" size="small" />
+                                                        }
+                                                    {/* </div> */}
+                                                </>}
+                                            secondary={
+                                                <React.Fragment>
+                                                    <Typography
+                                                        sx={{ display: 'inline', color: "rgba(0, 0, 0, 0.6)", fontWeight: 400, fontSize: 15, fontFamily: "sans-serif" }}
+                                                        component="span"
+                                                        variant="caption"
+                                                        color="text.primary"
+                                                    >
+                                                        {agentInfo?.description}
+                                                    </Typography>
+                                                    {" "}
+                                                </React.Fragment>
+                                            }
+                                        >
+                                        </ListItemText>
+                                    </ListItem>
+                                )
+                            })
+                        }
+                    </List>
+                </AccordionDetails>
+            </Accordion>
+            <Accordion expanded={true}  sx={{ marginTop: '4px', '&.Mui-expanded': { marginTop: '4px' }}} >
+                <AccordionSummary  expandIcon={<ExpandMoreIcon />}>
+                    <Typography
+                     sx={{
+                        display: 'inline',
+                        color: "rgba(0, 0, 0, 0.6)",
+                        fontWeight: 600,
+                        fontSize: 18,
+                        fontFamily: "sans-serif",
+                        paddingLeft: '10px'
+                    }}
+                    >Agents Created By You</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                    <List sx={{
+                        width: '100%',
+                        // height: `calc(100vh - ${styleProps.HeaderHeight}px)`,
+                        overflow: "auto",
+                        border: 0,
+                        borderTop: '2px dotted lightgray',
+                        marginTop: '3px',
+                        borderColor: 'grey.300',
+                        bgcolor: 'background.paper',
+                        "&& .Mui-selected": {
+                            backgroundColor: "#bdbdbd", paddingLeft: "20px"
+                        }
+                    }}
+                    >
+                        {(agents.filter(agentInfo => agentInfo.userDefined) && agents.filter(agentInfo => agentInfo.userDefined).length === 0) ?
+                            <Typography
+                                sx={{
+                                    display: 'inline',
+                                    color: "rgba(0, 0, 0, 0.6)",
+                                    fontWeight: 400,
+                                    fontSize: 15,
+                                    fontFamily: "sans-serif",
+                                    paddingLeft: '10px'
+                                }}
+                            >{agentsAreLoading ? 'Loading...' : "You haven't configured any agents"}
+                            </Typography>
+                            :
+                            agents.filter(agentInfo => agentInfo.userDefined)?.map(agentInfo => {
+                                return (
+                                    <ListItem button
+                                        key={agentInfo?.key}
+                                        onClick={(event) => handleListItemClick(event, agentInfo?.key)} selected={selectedAgentKey === agentInfo?.key}
+                                        secondaryAction={
+                                                <Stack direction="row" spacing={2} sx={{paddingLeft:80}} >
+                                                            {
+                                                            (agentInfo?.userDefined === true) ?
+                                                                <div>
+                                                                    <Tooltip title="Edit Agent">
+                                                                        <EditIcon sx={{color: "#606060"}}
+                                                                            onClick={async (e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+                                                                                await handleEditClick(agentInfo?.key);
+                                                                                }}
+                                                                            >
+                                                                            <Polyline />
+                                                                        </EditIcon>
+                                                                    </Tooltip>
+                                                                    <Tooltip title="Delete Agent">
+                                                                        <DeleteIcon sx={{ color: '#979797' }}
+                                                                            onClick={async (e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+                                                                                await handleDeleteClick(agentInfo?.key);
+                                                                                }}
+                                                                            >
+                                                                            <Polyline />
+                                                                        </DeleteIcon>
+                                                                    </Tooltip>
+                                                                    {
+                                                                        (agentInfo?.schema.trim() === "") ?
+                                                                            <Tooltip  
+                                                                            title={
+                                                                                <div style={{ whiteSpace: 'pre-line' }}>{`One of the following critical information is missing for this agent \n
+                                                                                    1. Schema \n
+                                                                                    2. Database connection information \n
+                                                                                    3. Gen AI API configuration\n\
+                                                                                    
+                                                                                    Please provide these information for the agent to work as expected`}</div>
+                                                                            }
+                                                                            >
+                                                                                <ErrorOutlineIcon sx={{ color: '#f50057' }}
+                                                                                    // onClick={async (e) => {
+                                                                                    //     e.preventDefault();
+                                                                                    //     e.stopPropagation();
+                                                                                    //     await handleDeleteClick(agentInfo?.key);
+                                                                                    //     }}
+                                                                                    >
+                                                                                    <Polyline />
+                                                                                </ErrorOutlineIcon>
+                                                                            </Tooltip>:<div/>
+                                                                        }
+                                                                </div>
+                                                                :<div/>
+                                                            }
+                                                </Stack>
+                                            }
+                                        >
+                                        <ListItemIcon>
+                                            <Image width={40} height={40} alt={`${agentInfo?.title} icon`} src={agentInfo?.icon} />
+                                        </ListItemIcon>
+                                        <ListItemText
+                                            primary={
+                                                <>
+                                                    <span style={{paddingRight: '8px' }}>{agentInfo?.title}</span>
+                                                    {/* <div> */}
+                                                    {agentInfo?.userDefined === true
+                                                            ? <Chip label="Local" color="success" variant="outlined" size="small" />
+                                                            : <Chip label="Remote" color="primary" variant="outlined" size="small" />
+                                                        }
+                                                    {/* </div> */}
+                                                </>}
+                                            secondary={
+                                                <React.Fragment>
+                                                    <Typography
+                                                        sx={{ display: 'inline', color: "rgba(0, 0, 0, 0.6)", fontWeight: 400, fontSize: 15, fontFamily: "sans-serif" }}
+                                                        component="span"
+                                                        variant="caption"
+                                                        color="text.primary"
+                                                    >
+                                                        {agentInfo?.description}
+                                                    </Typography>
+                                                    {" "}
+                                                </React.Fragment>
+                                            }
+                                        >
+                                        </ListItemText>
+                                    </ListItem>
+                                )
+                            })
+                        }
+                    </List>
+                </AccordionDetails>
+            </Accordion>
         </>
     )
 }

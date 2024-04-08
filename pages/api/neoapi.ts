@@ -34,7 +34,7 @@ let NeoAgents: Map<String, Agent> = {};
 
 const initAgents: void = async () => {
   let result = await run(NeoDatabaseConstants.BackendDatabaseKey, BackEndAgentQuery);
-  console.log('neoapi result: ', result);
+  // console.log('neoapi result: ', result);
   result
     .map(row => row.agentInfo)
     .forEach(row => {

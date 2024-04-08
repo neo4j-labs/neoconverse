@@ -67,10 +67,12 @@ export const getLocalAgents = () => localAgents;
 export const saveLocalAgent = (newAgent: any) => {
     const existingIndex = localAgents?.findIndex(data => data.title === newAgent.title)
 
-    if (existingIndex && existingIndex !== -1) {
+    if (existingIndex !=null && existingIndex !== -1) {
         localAgents[existingIndex] = newAgent;
     } else {
-        localAgents = [];
+        if (localAgents == null) {
+            localAgents = [];
+        }
         localAgents.push(newAgent);
     }
 

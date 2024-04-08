@@ -46,7 +46,7 @@ const Home: NextPage = () => {
 
   const { user, error, isLoading } = getUser();
 
-  console.log("userInfo ", user);
+  // console.log("userInfo ", user);
   const Capabilities = {
     TalkToMyData: "TalkToMyData",
     CypherGenie: "CypherGenie"

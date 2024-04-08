@@ -133,6 +133,7 @@ async function cypherCleanup(generatedCypher:string){
     {
         generatedCypher = generatedCypher.slice(1, -1);
     }
+    generatedCypher = await isCypherQuery(generatedCypher)?generatedCypher:"RETURN '" + generatedCypher + "' as response";
     // LLM generated cypher sometimes doesn't have right directionalities in cypher pattern, so removing directions in cypher except known variable length patterns
     // Includes the relationhships where relationship directionalities changes the semantic meaning of the traversal
     if (!(generatedCypher.includes('LEADS_TO') || generatedCypher.includes('NEXT') || generatedCypher.includes('PREVIOUS'))) {
@@ -155,4 +156,20 @@ async function chartPropsCleanup(generatedChartProps:string){
 
     return chartConfStr;
 
+}
+
+async function isCypherQuery(text: string) {
+    // Regular expressions to match basic Cypher patterns
+    const patterns = [
+        /^\s*MATCH\s+/i, // Matches "MATCH" at the start of the string, ignoring leading spaces
+        /^\s*CREATE\s+/i, // Matches "CREATE" at the start
+        /^\s*RETURN\s+/i, // Matches "RETURN" at the start
+        /^\s*MERGE\s+/i, // Matches "MERGE" at the start
+        /^\s*WITH\s+/i, // Matches "MERGE" at the start
+        /\(\s*:\w+\s*\)/, // Matches node patterns like "(:Label)"
+        /-\[\s*:\w+\s*\]-/ // Matches relationship patterns like "-[:REL]-"
+    ];
+
+    // Check if the text matches any of the Cypher patterns
+    return patterns.some(pattern => pattern.test(text));
 }
