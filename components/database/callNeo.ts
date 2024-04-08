@@ -8,10 +8,16 @@ export const runCypher = async (databaseInfo:Map, cypher:string, options:Map = {
     const db:string = databaseInfo.databaseName;
     var session:any 
 
-    let driver = neo4j.driver(url, neo4j.auth.basic(uid, pwd), {
+    var driverConfig = {
         disableLosslessIntegers: true,
         userAgent: `neoconverse-api`
-    });
+    }
+    if (!url.match(/bolt\+s/) && !url.match(/bolt\+ssc/)
+     && !url.match(/neo4j\+s/) && !url.match(/neo4j\+ssc/)) {
+        driverConfig.encrypted = false;
+    }
+
+    let driver = neo4j.driver(url, neo4j.auth.basic(uid, pwd), driverConfig);
     if (db) {
         session = driver.session({database:db});
     } else {
