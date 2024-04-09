@@ -351,7 +351,7 @@ const ApplicationContent: NextPage = () => {
         }
     
         setLoading(false);
-        // console.log("chartConfStr", finalMessage);
+        console.log("Final response text from LLM", finalMessage);
 
         if (respondWithChart && neoResponse.result.length !=0){
           finalMessage = JSON.stringify(eval("(" + finalMessage + ")"));

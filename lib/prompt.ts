@@ -58,8 +58,10 @@ Here are the distinct watch terms:
     - bad
     - canceled
     - charge
-Your Objective: Given the input in the form of a question (${question}) and its response (${answer}), produce a human-readable summary or list that effectively communicates the information to a lay audience. Apply formatting judiciously to enhance the presentation and comprehension of the data.
-Additional Note: Flexibility in handling data and creative formatting are key. Always aim for clarity and accessibility in your output.
+Your Objective: Given the input in the form of a question (${question}) and its response (${answer}), produce a human-readable summary or list that effectively communicates the information to a lay audience. Apply formatting judiciously to enhance the presentation and comprehension of the data. 
+Do not use header formating with #, ##, ### in the markdown.
+Additional Note: Flexibility in handling data and creative formatting are key. Always aim for clarity and accessibility in your output. 
+Make it sound like natural conversation and avoid explaining the questions again and saying like here is the human readable format and so on.
 `
 return prompt
 }
