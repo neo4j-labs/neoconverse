@@ -14,7 +14,7 @@ You can get started with NeoConverse in one of the below two ways
 
 ## **On-Prem Installation guide**
 
-### **Building**
+### **Cloning**
 
 Clone the github repo
 ```
@@ -22,7 +22,7 @@ https://github.com/neo4j-labs/neoconverse.git
 ```
 The latest code is available in `master` branch
 
-### **Install NPM packages**
+### **Installing NPM packages**
 
 Before building you will need to run this command to install all of the necessary npm packages: 
 
@@ -30,7 +30,7 @@ Before building you will need to run this command to install all of the necessar
 sudo npm install --legacy-peer-deps
 ```
 
-### **Build**
+### **Building**
 
 Run the following command to create a build:
 
@@ -54,10 +54,11 @@ The .env variable requirements differs for each of these features.
   
 Below environmental variables are required if you are planning to configure predefined agent, that would display by default under `Explore Predefined Agents` section
 
-#### *LLM related env variables* : Based on the LLM provider you use, correponding credentials needs to be passed and dont forget to set the DEFAULT_PROVIDER & DEFAULT_MODEL
+*LLM related env variables* :  Based on the LLM provider you use, correponding credentials needs to be passed and dont forget to set the DEFAULT_PROVIDER & DEFAULT_MODEL
 
-#### *Backend env variables* : Backend env variables are to configure your backend neo4j database where you could define predefined agents,
+*Backend env variables* : Backend env variables are to configure your backend neo4j database where you could define predefined agents,
 You could use the sample setup cypher scripts under `agents/cypherScripts` to set up your prededined agents
+
 ```
 OPENAI_API_KEY=<OpenAI Key goes OpenAI users>
 GOOGLE_API_KEY=<Google API Key goes here for GCP users>
