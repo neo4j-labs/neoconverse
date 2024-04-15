@@ -3,6 +3,8 @@ import { talkToLLM } from "../components/llm/llmCommunication";
 import { LLMProvider } from "../components/llm/llmConstants";
 import { getAgentByName } from "../agents/agentRegistry";
 import { LLMDetails } from "./type";
+import { StreamingTextResponse } from 'ai';
+
 
 export async function GenerateContent(
     invokeFromClient:boolean,
@@ -99,7 +101,7 @@ async function invokeService(url:string, params:{})
     return response
 }
 
-async function readStream(_response:Response)
+async function readStream(_response:StreamingTextResponse)
 {
     let response = (_response instanceof Promise) ? await _response : _response;
     const reader = response?.body?.getReader();
@@ -107,7 +109,7 @@ async function readStream(_response:Response)
     let result = ""
     while (true) {
         const { done, value } = await reader?.read();
-        let chunkValue = new TextDecoder().decode(value);
+        let chunkValue = new TextDecoder("utf-8").decode(value);
         result+=chunkValue;
         if (done) {
             break;
@@ -149,7 +151,7 @@ async function cypherCleanup(generatedCypher:string){
 
 async function chartPropsCleanup(generatedChartProps:string){
 
-    let chartConfStr = generatedChartProps.replaceAll('```','').replace("json",'')
+    let chartConfStr = generatedChartProps.replaceAll('```','').replace("json",'').replace("jsx",'').replace("const option =",'')
     chartConfStr =chartConfStr.toString().trim().startsWith("{")? chartConfStr.toString().trim().replace(';',''): "{"+chartConfStr.toString().trim().replace(';','') ;
 
     // Add any additional cypher generation logic here

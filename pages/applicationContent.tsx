@@ -85,6 +85,7 @@ const ApplicationContent: NextPage = () => {
       author: {
         name: "ai"
       },
+      agent:"System",
       avatar: '/Neo4j-icon-color.png',
       isChart: false,
       chartData: {},
@@ -219,6 +220,7 @@ const ApplicationContent: NextPage = () => {
       conversation_id : Date.now()+"-"+user?.name,
       text: userInput,
       date: new Date(),
+      agent: selectedAgentKey,
       author: {
         name: "User"
       },
@@ -232,6 +234,7 @@ const ApplicationContent: NextPage = () => {
       conversation_id : Date.now()+"-"+user?.name,
       text: "",
       date: new Date(),
+      agent: selectedAgentKey,
       author: {
         name: "ai"
       },
@@ -259,7 +262,7 @@ const ApplicationContent: NextPage = () => {
 
     
     // Filter the array to exclude the first element and any element where isChart is true
-    const filteredMessages = messages.filter((message, index) => index !== 0 && !message.isChart);
+    const filteredMessages = messages.filter((message, index) => index !== 0 && !message.isChart && message.agent==selectedAgentKey);
 
     // Slice the array to get the last two conversation after filtering
     const lastTwoMessages = filteredMessages.slice(-6);

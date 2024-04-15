@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^2.6.3",
-    "@aws-sdk/client-bedrock-runtime": "^3.535.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.554.0",
     "@codemirror/language": "^6.6.0",
     "@codemirror/legacy-modes": "^6.3.2",
     "@emotion/react": "^11.10.6",
@@ -17,7 +17,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.4.0",
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@google-cloud/aiplatform": "^2.16.0",
+    "@google-cloud/aiplatform": "^3.18.0",
     "@google/generative-ai": "^0.3.1",
     "@headlessui/react": "^1.7.7",
     "@headlessui/tailwindcss": "^0.1.2",
@@ -33,7 +33,7 @@
     "@types/auth0-js": "^9.21.0",
     "@uiw/react-codemirror": "^4.19.10",
     "@vercel/analytics": "^0.1.8",
-    "ai": "^3.0.13",
+    "ai": "^3.0.19",
     "auth0-js": "^9.21.0",
     "azure-openai": "^0.9.4",
     "crypto-js": "^4.2.0",
@@ -55,7 +55,8 @@
     "react-router": "^6.13.0",
     "react-router-dom": "^6.13.0",
     "react-use-measure": "^2.1.1",
-    "styled-components": "^5.3.9"
+    "styled-components": "^5.3.9",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^18.16.0",
