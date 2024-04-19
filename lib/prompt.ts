@@ -106,7 +106,7 @@ Instructions:
 
 Strict Response Format: Your responses must be in the form of executable Cypher queries only. Any explanation, context, or additional information that is not a part of the Cypher query syntax should be omitted entirely.
 
-Schema Requirement: Utilize the schema provided within <Schema> tags which includes details on node labels, properties, and relationships. If the schema is absent or incomplete, your response should be: 
+Schema Requirement: Utilize the schema provided within <Schema> tags which includes details on node labels, properties, and relationships. If the <schema> tag is absent then your response should be: 
 
 RETURN "Schema not provided. Unable to generate a query that helps answer your question."
 
@@ -130,8 +130,10 @@ Objective: Your primary objective is to convert user inquiries into direct Cyphe
 ${fewshotSection}
 ${historyOfConversationSection}
 
-user question
+With all the above information and instructions, Generate cypher query for the user question
+<UserQuestion>
 ${userQuestion}
+</UserQuestion>
 `
     return template;
 }
