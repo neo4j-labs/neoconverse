@@ -3,16 +3,13 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleGenerativeAIStream, OpenAIStream, AWSBedrockAnthropicMessagesStream, AWSBedrockAnthropicStream, Message, StreamingTextResponse } from 'ai';
 import OpenAI from 'openai';
 import { BedrockRuntimeClient, InvokeModelWithResponseStreamCommand } from '@aws-sdk/client-bedrock-runtime';
-import * as prompts from '../../lib/prompt';
 
 // import { experimental_buildAnthropicPrompt, experimental_buildAnthropicMessages } from 'ai/prompts';
 
 import { LLMProvider } from "./llmConstants";
 
-export const talkToLLM = async ({ prompt, provider, model, llmKeys, llmFlags = {} }) => {
-    if (!prompt) {
-        return new Response("No prompt in the request", { status: 400 });
-    }
+export const talkToLLM = async ({ chatMessages=[], tools=[], provider="", model="", llmKeys, llmFlags = {} }) => {
+
     let stream = new ReadableStream();
   
     switch(provider) {
@@ -27,7 +24,7 @@ export const talkToLLM = async ({ prompt, provider, model, llmKeys, llmFlags = {
             // Ask Google GenAI model for a stream of generated content given the prompt
             const gcp_stream = await genAI
                 .getGenerativeModel({ model: model })
-                .generateContentStream(prompt);
+                .generateContentStream("");
 
             // Convert the response into friendly text-stream
             stream = await GoogleGenerativeAIStream(gcp_stream);
@@ -38,19 +35,13 @@ export const talkToLLM = async ({ prompt, provider, model, llmKeys, llmFlags = {
             // Create an OpenAI API client (that's edge friendly!)
             const openai = new OpenAI({apiKey: llmKeys.OPENAI_API_KEY, ...llmFlags});
 
-            // const system_prompt = prompts.CYPHER_GENERATION_PROMPT(initialContext, fewShotStr, convoHistory, userInput )
-            
+            let options = { messages:chatMessages, model, temperature:0, max_tokens:4000, stream: true }
+            if(tools) {
+              options.tools = tools
+            }
+      
             // Ask OpenAI for a streaming completion given the prompt
-            const response = await openai.chat.completions.create({
-                model: model,
-                max_tokens: 2000,
-                stream: true,
-                messages:
-                [
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": prompt}
-                ],
-            });
+            const response = await openai.chat.completions.create(options);
     
             // Convert the response into a friendly text-stream
             stream = OpenAIStream(response);

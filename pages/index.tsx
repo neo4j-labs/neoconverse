@@ -7,6 +7,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 import ApplicationContent from './applicationContent';
+import AppContent from './appContent';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -170,7 +171,7 @@ const Home: NextPage = () => {
         </Grid>
         {/* <Divider light /> */}
         {/* className="overflow-auto hover:overflow-scroll justify-end" */}
-        <ApplicationContent></ApplicationContent>
+        <AppContent></AppContent>
         {/*}
       {capability === Capabilities.TalkToMyData && (
          <OpenAI></OpenAI>

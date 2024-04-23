@@ -1,0 +1,16 @@
+{
+    "name": "get_count",
+    "description": "Get the count of given from neo4j database",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "Node label name"
+        }
+      },
+      "required": [
+        "label"
+      ]
+    }
+}

@@ -1,9 +1,14 @@
 import { runCypher } from "../components/database/callNeo";
 import { talkToLLM } from "../components/llm/llmCommunication";
+import { talkToLLM as LLMCall } from "../components/llm/llmCommunicationFuncCall";
+
 import { LLMProvider } from "../components/llm/llmConstants";
 import { getAgentByName } from "../agents/agentRegistry";
 import { LLMDetails } from "./type";
 import { StreamingTextResponse } from 'ai';
+import { invokeFunctions } from "./semanticLayerTools/functions";
+import { getCount, getRelevantArticles, getCypher, getChartProps } from "./semanticLayerTools/tools";
+import { SYSTEM_PROMPT_FUNCTION_CALLING } from "./prompt"
 
 
 export async function GenerateContent(
@@ -175,3 +180,97 @@ async function isCypherQuery(text: string) {
     // Check if the text matches any of the Cypher patterns
     return patterns.some(pattern => pattern.test(text));
 }
+
+export async function InvokeLLMForTool(
+    payload:{}
+)
+{
+    const { previous, tools, llmKey } = payload;
+    if (!Array.isArray(tools)) {
+        return new Response('Prompt is not in correct format', {
+            status: 400,
+        })
+    }
+    let prededinedTools = 
+    [
+        { type: 'function', function: getCount },
+        { type: 'function', function: getRelevantArticles },
+        { type: 'function', function: getCypher },
+        { type: 'function', function: getChartProps}
+    ]
+
+    let tools_output = []
+    for(let tool of tools) {
+        let tool_args = JSON.parse(tool?.function?.arguments)
+        let tool_output = await invokeFunctions(tool?.function?.name, tool_args)
+        tools_output.push({ 
+            tool_call_id: tool?.id, 
+            role: 'tool', 
+            name: tool?.function?.name, 
+            content: JSON.stringify(tool_output, null, 2) 
+        })
+
+    }
+    // let system_prompt = "You are a helpful assistant suppporting NeoConverse web application that enables natural language interaction with Neo4j databases"
+    let system_prompt = SYSTEM_PROMPT_FUNCTION_CALLING()
+    let messages = [{ role: 'system', content: system_prompt }]
+    if(previous?.length > 0) {
+        messages = messages.concat(previous)
+    }
+
+    messages.push({ role: 'assistant', content: null, tool_calls: tools })
+    for(let output_item of tools_output) {
+        messages.push(output_item)
+    }
+
+    let llmKeys = {
+        OPENAI_API_KEY: llmKey.openAIKey,
+        GOOGLE_API_KEY: llmKey.googleAPIKey,
+        AWS_ACCESS_KEY_ID: llmKey.awsAccessKeyId,
+        AWS_SECRET_ACCESS_KEY: llmKey.awsSecretAccessKey
+    };
+    let llmResponse = LLMCall({chatMessages:messages, tools:prededinedTools,provider:llmKey.provider, model:llmKey.model, llmKeys:llmKeys,llmFlags:{dangerouslyAllowBrowser: true}})
+    const result = await readStream(llmResponse);
+    return result;
+}
+
+export async function InvokeLLMForMessage(payload:{})
+{
+    const userInput = payload.userInput;
+    const previousMessages = payload.previous;
+    const llmDetails = payload.llmKey;
+    if (!userInput) {
+        return new Response('Prompt is not in correct format', {
+            status: 400,
+        })
+    }
+
+    // let system_prompt = "You are a helpful assistant suppporting NeoConverse web application that enables natural language interaction with Neo4j databases"
+    let system_prompt = SYSTEM_PROMPT_FUNCTION_CALLING()
+
+    let messages = [{ role: 'system', content: system_prompt }]
+    if(previousMessages?.length > 0) {
+        messages = messages.concat(previousMessages)
+    }
+
+    messages.push({ role: 'user', content: userInput })
+
+    let prededinedTools = 
+    [
+        { type: 'function', function: getCount },
+        { type: 'function', function: getRelevantArticles },
+        { type: 'function', function: getCypher },
+        { type: 'function', function: getChartProps}
+    ]
+    let llmKeys = {
+        OPENAI_API_KEY: llmDetails.openAIKey,
+        GOOGLE_API_KEY: llmDetails.googleAPIKey,
+        AWS_ACCESS_KEY_ID: llmDetails.awsAccessKeyId,
+        AWS_SECRET_ACCESS_KEY: llmDetails.awsSecretAccessKey
+    };
+
+    let llmResponse = LLMCall({chatMessages:messages, tools:prededinedTools,provider:llmDetails.provider, model:llmDetails.model, llmKeys:llmKeys,llmFlags:{dangerouslyAllowBrowser: true}})
+    const result = await readStream(llmResponse);
+    return result;
+}
+
