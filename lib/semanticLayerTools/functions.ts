@@ -1,4 +1,4 @@
-import { ExecuteCypher } from "../middleware"
+import { ExecuteCypher, cypherCleanup } from "../middleware"
 
 async function getCount({label=""}){
     let query = `MATCH (n:${label}) RETURN COUNT(n) as totalCount `
@@ -35,17 +35,57 @@ async function getRelevantArticle({searchTerm=""})
     return result;
 }
 
-async function getChartProps({function_name="", function_args={} })
+async function getChartProps({data="" })
 {
-    invokeFunctions(function_name, function_args)
+    return JSON.parse(data);
 }
 
 async function getCypher({query=""})
 {
+    try {
+        let cypher = await cypherCleanup(query);
+        let result = await ExecuteCypher(true, false, "Companies",cypher, {});
+        return result;
+    } 
+    catch(error) 
+    {
+        return error
+    }
+}
+
+async function getVisualization({subGraphName=""})
+{
+    try 
+    {
+        let cypher  = 
+        `MATCH path = (o:Organization{name:"${subGraphName}"})<-[]-(a)
+        WITH collect(path) as paths
+        CALL { WITH paths UNWIND paths AS path UNWIND nodes(path) as node RETURN collect(distinct node) as nodes }
+        CALL { WITH paths UNWIND paths AS path UNWIND relationships(path) as rel RETURN collect(distinct rel) as rels }
+        RETURN nodes, rels`
+
+        let result = await ExecuteCypher(true, false, "Companies",cypher, {});
+        return result;
+    }
+    catch(error) 
+    {
+        return error
+    }
+}
+
+async function getArticleCountBySiteAndMonth({siteName=""})
+{
+    let siteNameFilter = siteName=="*"?"":`WHERE toLower(a.siteName) = toLower(("${siteName}")`
+    let returnClause = siteName!="*"?`RETURN a.siteName, a.date.year as year, a.date.month as month, count(a) as count order by month`
+    :`RETURN a.siteName, a.year, COUNT(a) as count order by year LIMIT 10`
+
+    let query = `MATCH (a:Article)-[:MENTIONS]-(o:Organization)-[:HAS_CATEGORY]-(i:IndustryCategory)`+
+    `${siteNameFilter}`+
+    `${returnClause}`
+
     let result = await ExecuteCypher(true, false, "Companies",query, {});
     return result;
 }
-
 export async function invokeFunctions( function_name="", function_args={} ) {
     
     switch(function_name) {
@@ -57,6 +97,10 @@ export async function invokeFunctions( function_name="", function_args={} ) {
             return await getCypher(function_args)
         case 'get_chart_props':
             return await getChartProps(function_args)
+        case 'get_article_count_by_site':
+            return await getArticleCountBySiteAndMonth(function_args)
+        case 'get_visualization':
+            return await getVisualization(function_args)
         default:
             return { error: 'unknown function', message: 'function not found' }
     }

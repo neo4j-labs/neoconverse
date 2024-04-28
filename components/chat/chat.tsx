@@ -35,7 +35,25 @@ import LoadingDots from "../common/LoadingDots";
 import CypherEditor from "./cypherEditor"
 import SchemaModal from '../common/SchemaModal';
 import QuestionsModal from '../common/QuestionsModal';
+import GraphViz from '../common/GraphVizF3D';
 
+// import dynamic from 'next/dynamic';
+// const InteractiveNvlWrapper = dynamic(() => import("@neo4j-nvl/react"), {
+//     ssr: false
+//   });
+// import  BasicNvlWrapper  from "@neo4j-nvl/react"
+
+import dynamic from 'next/dynamic';
+// const BasicNvlWrapper = dynamic(() => import("/Users/kumarss/Documents/git_new/refactor/neoconverse/node_modules/@neo4j-nvl/react/lib/index"), {
+//     ssr: false
+//   });
+
+// const [isFullScreen, setIsFullScreen] = useState(false);
+// const graphContainerRef = useRef<HTMLDivElement>(null);
+
+// const [multiSelect, setMultiSelect] = useState(false)
+// import InteractiveNvlWrapper from '@neo4j-nvl/react';
+// import NVL, { NvlOptions } from '@neo4j-nvl/core';
 const ExtraPadding = 10;
 
 const Chat = (props) => {
@@ -58,7 +76,8 @@ const Chat = (props) => {
         StreamResponse,
         userInput,
         isUserDefined,
-        llmKey
+        llmKey,
+        graphElements
     } = props;
 
     styleProps = styleProps || {};
@@ -113,6 +132,17 @@ const Chat = (props) => {
         setAnchorEl(null);
         setOpenCypherBlock(null);
     };
+
+    const handleFullScreenToggle = () => {
+        setIsFullScreen(!isFullScreen);
+        if (isFullScreen) {
+          graphContainerRef.current!.style.width = '700px';
+          graphContainerRef.current!.style.height = '300px';
+        } else {
+          graphContainerRef.current!.style.width = '100vw';
+          graphContainerRef.current!.style.height = '100vh';
+        }
+      };
 
     return (
         <>
@@ -242,6 +272,42 @@ const Chat = (props) => {
                                     }
                                 />
                             )
+                            }
+                            {i != 0 && !m.isChart && m.chartData.toString() != '' && (
+                                <GraphViz  GraphData={m.graphElements}/>
+
+                                // <BasicNvlWrapper
+                                // nodes={[{ id: 0, caption: 'graphs' }, { id: 1, caption: 'everywhere' }, { id: 2, caption: 'everywhere' }]}
+                                // rels={[{ from: 0, to: 1, id: 10, caption: 'are' }, { from: 0, to: 2, id: 11, caption: 'are' }]}
+                             
+                                //      /> 
+                                //     <ForceGraph3D
+                                //     graphData={graphElements}
+                                //     backgroundColor = {"#000000"}
+                                //     linkColor = {"#000000"}
+                                //     linkWidth={1}
+                                //     // forceEngine = {"ngraph"}
+                                //     linkCurvature={"curvature"}
+                                //     dagMode="lr"
+                                //     nodeLabel={"name"}
+                                //     dagLevelDistance={60}
+                                //     linkLabel = {"type"}
+                                //     // linkWidth
+                                //     nodeId="id"
+                                //     nodeAutoColorBy="label"
+                                //     linkDirectionalParticles={2}
+                                //     linkDirectionalParticleWidth={0.5}
+                                //     // onNodeClick={node => window.open(`https://github.com/${node.user}/${node.package}`, '_blank')}
+                                //     // nodeThreeObject={node => {
+                                //     //   const sprite = new SpriteText(node.package);
+                                //     //   sprite.color = node.color;
+                                //     //   sprite.textHeight = 5;
+                                //     //   return sprite;
+                                //     // }}
+                                //     width={700}
+                                //     height={300}
+                                // />
+                                ) 
                             }
                             {!loading && i === messages.length - 1 && (
                                 <span ref={bioRef}></span>)

@@ -181,20 +181,24 @@ Accepted Relationship paths or patterns
 "(:Article)-[:HAS_CHUNK]->(:Chunk)".\n
 <\Schema>
 `+
-`# Tools\n` +
+`# Available Tools for you\n` +
 `You have the following tools that you can invoke based on the user inquiry.\n` +
-`- get_count, when the user wants to know the count of a particular domain entity.\n` +
+`- get_visualization. when the user wants to visualize the subgraph\n`+
+`- get_count, when the user wants to know the count of a particular node label in the schema.\n` +
 `- get_relevant_article, when the user want to know information from artcles, news or media.\n` +
-`- get_cypher, use this tool as a last option to generate cypher for user inquiry in the following condition,\n` +
+`- get_cypher, use this tool to generate cypher for user inquiry in the following condition,\n` +
     `- Schema is provided within <Schema> xml tag,\n` +
-    `- Schema has relavant information to generate cypher for user question \n` +
+    `- Schema has relavant information to generate cypher for user inquiry \n` +
     `- Strict Response Format: Your responses must be in the form of executable Cypher queries only. Any explanation, context, or additional information that is not a part of the Cypher query syntax should be omitted entirely.\n` +
-`- get_chart_props, use this tool when the user inquiry ask for charts and strictly follow below instructions  \n` + 
-    `- This tool should first execute other relavant available tool as a first step \n` + 
+`- get_chart_props, use this tool as an additional step when the user inquiry ask for charts and strictly follow below instructions  \n` + 
     `- You would use the result from previous step to provide chart options for apache echart that can be used to create dynamic chart element using React.createElement to chart below data set provided inside <dataset> xml tag \n`+ 
+    `- Strict Response Format: Your responses must be in the form of chart props only. Any explanation, context, or additional information that is not a part of the chart props syntax should be omitted entirely.\n` +
 `Feel free to ask additional clarification if the user question is not clear to you.\n` +
+`Strictly do not directly respond with cypher query, if you are generating cypher query then always use get_cypher tool, that executes cypher and get the actual result for user inquiry  \n`+
 `When you fill up some of the required information yourself, be sure to confirm to user before proceeding.\n` +
-`Aside from the listed functions above, answer all other inquiries by telling the user that it is out of scope of your ability.\n\n` 
+`Aside from the listed functions above, answer all other inquiries by telling the user that it is out of scope of your ability.\n\n` +
+`If any of the tool responded with an exception, take is as feedback and synthesize the error and retry \n\n` 
+
 
     return template;
 }

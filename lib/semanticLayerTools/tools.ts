@@ -1,6 +1,6 @@
 export const getCount = {
     "name": "get_count",
-    "description": "Get the count of given from neo4j database",
+    "description": "Get the count of given node label from neo4j database",
     "parameters": {
       "type": "object",
       "properties": {
@@ -34,7 +34,7 @@ export const getRelevantArticles = {
 
 export const getCypher = {
     "name": "get_cypher",
-    "description": "Use this tool as a last option to generate cypher for user inquiry ",
+    "description": "Use this tool to generate cypher for user inquiry, Always use this tool if you generate cypher query as response",
     "parameters": {
       "type": "object",
       "properties": {
@@ -54,16 +54,47 @@ export const getChartProps = {
     "parameters": {
       "type": "object",
       "properties": {
-        "function_name": {
+        "data": {
           "type": "string",
-          "description": "Available tool to use based on user inquiry"
+          "description": "data to plotting the charts"
         },
-        "function_args": {
-            "type": "string",
-            "description": "parameters required for that function call "
-          }
       },
       "required": [
+        "data"
       ]
     }
+}
+
+export const getArticleCountBySite = {
+  "name": "get_article_count_by_site",
+  "description": "This function help find article count by year and month for given site name  ",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "siteName": {
+        "type": "string",
+        "description": "Site name where the arcticles are published"
+      }
+    },
+    "required": [
+      "siteName"
+    ]
+  }
+}
+
+export const getVisualization = {
+  "name": "get_visualization",
+  "description": "This function help find visualize neo4j graph, You should directly pass back the result of this tool to calling function, calling function will use this result to visualize further  ",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "subGraphName": {
+        "type": "string",
+        "description": "Name of subgraph to visualize"
+      }
+    },
+    "required": [
+      "subGraphName"
+    ]
+  }
 }

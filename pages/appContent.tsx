@@ -17,7 +17,25 @@ import { track, Events } from '../components/common/tracking';
 import { LLMDetails } from '../lib/type';
 import {SAVE_CONVO_CYPHER} from '../lib/cypherQuery'
 import { userInfo } from 'os';
+// import  {BasicNvlWrapper}  from '@neo4j-nvl/react';
 const HeaderHeight = 135;
+// import type { Node, Relationship } from '@neo4j-nvl/core';
+// const [nodes, setNodes] = useState<Node[]>([]);
+// const [relationships, setRelationships] = useState<Relationship[]>([]);
+// import  ForceGraph3D from 'react-force-graph';
+// import ForceGraph3D from '3d-force-graph'
+// import ForceGraph3D from 'react-force-graph-3d';
+
+import dynamic from 'next/dynamic';
+
+// const ForceGraph3D = dynamic(() => import("../node_modules/react-force-graph-3d"), {ssr: false})
+// import SpriteText from "//unpkg.com/three-spritetext/dist/three-spritetext.mjs";
+
+
+// const BasicNvlWrapper = dynamic(() => import("@neo4j-nvl/react/lib/index"), {ssr:false})
+const ForceGraph3D = dynamic(() => import("react-force-graph-3d"), {
+  ssr: false
+});
 
 type Message =  {
   text: any;
@@ -68,6 +86,47 @@ const AppContent: NextPage = () => {
   const [agentsAreLoading, setAgentsAreLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [relationships, setRelationships] = useState<Relationship[]>([]);
+ let json = 
+  {
+    "nodes": [
+      { "id": "react-force-graph", "user": "vasturiano" },
+      { "id": "force-graph", "user": "vasturiano" },
+      { "id": "3d-force-graph", "user": "vasturiano" },
+      { "id": "three-render-objects", "user": "vasturiano" },
+      { "id": "3d-force-graph-vr", "user": "vasturiano" },
+      { "id": "3d-force-graph-ar", "user": "vasturiano" },
+      { "id": "aframe-forcegraph-component", "user": "vasturiano" },
+      { "id": "three-forcegraph", "user": "vasturiano" },
+      { "id": "d3-force-3d", "user": "vasturiano" },
+      { "id": "d3-force", "user": "d3" },
+      { "id": "ngraph", "user": "anvaka" },
+      { "id": "three.js", "user": "mrdoob" },
+      { "id": "aframe", "user": "aframevr" },
+      { "id": "AR.js", "user": "jeromeetienne" }
+    ],
+    "links": [
+      { "target": "force-graph", "source": "react-force-graph" },
+      { "target": "3d-force-graph", "source": "react-force-graph" },
+      { "target": "3d-force-graph-vr", "source": "react-force-graph" },
+      { "target": "3d-force-graph-ar", "source": "react-force-graph" },
+      { "target": "aframe-forcegraph-component", "source": "3d-force-graph-vr" },
+      { "target": "aframe-forcegraph-component", "source": "3d-force-graph-ar" },
+      { "target": "three-forcegraph", "source": "3d-force-graph" },
+      { "target": "three-render-objects", "source": "3d-force-graph" },
+      { "target": "three-forcegraph", "source": "aframe-forcegraph-component" },
+      { "target": "d3-force-3d", "source": "three-forcegraph" },
+      { "target": "ngraph", "source": "three-forcegraph" },
+      { "target": "d3-force", "source": "force-graph" },
+      { "target": "aframe", "source": "3d-force-graph-vr" },
+      { "target": "three.js", "source": "aframe" },
+      { "target": "three.js", "source": "3d-force-graph" },
+      { "target": "AR.js", "source": "3d-force-graph-ar" },
+      { "target": "aframe", "source": "AR.js" }]
+  }
+  const [graphElements, setGraphElements] =  useState(json);
+
   const [messages, setMessages] = useState([  
     { conversation_id: Date.now()+"-"+user?.name,
       text: "Welcome to our NeoConverse, powered by generative AI! Ask your questions in natural language and get the most appropriate information from your neo4j database,  Let's get started! ",
@@ -80,6 +139,7 @@ const AppContent: NextPage = () => {
       isChart: false,
       chartData: {},
       cypher:  "",
+      graphElements: {},
       role:"system"
     }])
 
@@ -213,7 +273,6 @@ const AppContent: NextPage = () => {
 
     // Enable progress loading bar while response is being generated
     setLoading(true);
-
     if(context === "")
     {
       setContext((prev) => prev + '\n' +userInput.toString()+ '\n');
@@ -234,9 +293,10 @@ const AppContent: NextPage = () => {
         name: "User"
       },
       avatar: "/userProfile.jpeg",
-      isChart: false,
+      isChart: respondWithChart,
       cypher: "",
       chartData:{},
+      graphElements: {},
       role:"user"
     })
 
@@ -296,20 +356,18 @@ const AppContent: NextPage = () => {
     try {  
       do {
           const functionToCall = result_tools.length > 0 ? InvokeLLMForTool : InvokeLLMForMessage
-          const payload = result_tools.length > 0 ? { tools: result_tools, previous, llmKey } : { userInput: userInput, previous, llmKey }
+          const payload = result_tools.length > 0 ? { tools: result_tools, previous, userInput, llmKey, isGraphViz:true } : { userInput: userInput, previous, llmKey, isGraphViz:true  }
           
           let result = await functionToCall((payload));
           
-          
-          console.log(result)
-
+          // console.log(result)
           let isJsonresult = isValidJSON(result)
 
           result = respondWithChart?chartPropsCleanup(result):result;
 
           if( !isJsonresult) {
-              console.log(result)
-              const newAssistantMessage = {
+                console.log("result : ", result)
+                const newAssistantMessage = {
                 conversation_id : Date.now()+"-"+user?.name,
                 text: result,
                 date: new Date(),
@@ -321,12 +379,78 @@ const AppContent: NextPage = () => {
                 isChart: respondWithChart,
                 cypher: "",
                 chartData:respondWithChart?JSON.parse(result):{},
+                graphElements: {},
                 role:"assistant"
               }
               setMessages((prev) => [...prev, ...[newAssistantMessage]])
               previous.push({ role: 'assistant', content: result.content })
           }
+          if(isJsonresult && JSON.parse(result).result)
+          {
+            let graphEntities = JSON.parse(result).result;
+            
+            let nodes = graphEntities.map((f) => f.nodes);
+            let rels = graphEntities.map((f) => f.rels);
+
+            const formatedNodes: [] = nodes[0].map((g:any) => ({
+              id: g.elementId,
+              size: 40,
+              captionAlign: 'bottom',
+              iconAlign: 'bottom',
+              captionHtml: <b>Test</b>,
+              caption: `${g.labels}: ${g.name}`,
+            }));
+
+            const formatedRels: [] = rels[0].map((r: any) => ({
+                  id: r.elementId,
+                  from: r.startNodeElementId,
+                  to: r.endNodeElementId,
+                  caption: r.typeç
+      
+            }));
+
+            setNodes(formatedNodes);
+            setRelationships(formatedRels);
+
+            const formatedNodes1: [] = nodes[0].map((g:any) => ({
+              id: g.elementId,
+              name:g.properties.name?g.properties.name:g.properties.title,
+              label:g.labels[0]
+            }));
+            const formatedRels1: [] = rels[0].map((r: any) => ({
+              source: r.startNodeElementId,
+              target: r.endNodeElementId,  
+              type: r.type
+          }));
+
+            let obj = {
+              nodes:formatedNodes1,
+              links:formatedRels1
+            }
+            setGraphElements(obj)
+            
+            const newAssistantMessage = {
+              conversation_id : Date.now()+"-"+user?.name,
+              text: "",
+              date: new Date(),
+              agent: selectedAgentKey,
+              author: {
+                name: "assistant"
+              },
+              avatar: currentDomainImage,
+              isChart: respondWithChart,
+              cypher: "",
+              chartData:{},
+              graphElements: obj,
+              role:"assistant"
+            }
+            setMessages((prev) => [...prev, ...[newAssistantMessage]])
+            previous.push({ role: 'assistant', content: result.content })
+          }
+
           if(isJsonresult && JSON.parse(result).tool_calls) {
+            console.log("tool calls : ", JSON.parse(result).tool_calls)
+
               loopCount++
               if(loopCount >= MAX_LOOP_COUNT) {
                   isCompleted = true
@@ -337,10 +461,16 @@ const AppContent: NextPage = () => {
               isCompleted = true
           }
       } while(!isCompleted)
+      setUserInput("");
+
   } catch(error) {
       console.log(error.name, error.message)
+      setUserInput("");
+
   } finally {
       setLoading(false)
+      setUserInput("");
+
       setTimeout(() => {
           // inputRef.current.focus()
       }, 100)
@@ -370,6 +500,13 @@ const AppContent: NextPage = () => {
     return neoResponse
   }
   
+  // const [myNodes] = useState<Node[]>([
+  //   { id: '0', size: 20 },
+  //   { id: '1', size: 50 }
+  // ])
+  // const [relationships] = useState<Relationship[]>([{ id: '10', from: '0', to: '1' }])
+
+
   return (
     <div>
      <main >
@@ -397,6 +534,42 @@ const AppContent: NextPage = () => {
                   />
                 </Grid>
                 <Grid item xs={9} sx={{paddingTop: '0px'}}>
+                {/* <InteractiveNvlWrapper
+                                    nodes={nodes}
+                                    rels={relationships}
+                                    mouseEventCallbacks={{
+                                        onHover: (element) => console.log(element),
+                                        onNodeClick: (node) => console.log(node),
+                                        // onMultiSelect: multiSelect
+                                    }}
+                                    /> */}
+                {/* <BasicNvlWrapper nodes={nodes} rels={relationships} /> */}
+                {/* <ForceGraph3D
+                    graphData={graphElements}
+                    backgroundColor = {"#000000"}
+                    linkColor = {"#000000"}
+                    linkWidth={1}
+                    // forceEngine = {"ngraph"}
+                    linkCurvature={"curvature"}
+                    dagMode="lr"
+                    nodeLabel={"name"}
+                    dagLevelDistance={60}
+                    linkLabel = {"type"}
+                    // linkWidth
+                    nodeId="id"
+                    nodeAutoColorBy="label"
+                    linkDirectionalParticles={2}
+                    linkDirectionalParticleWidth={0.5}
+                    // onNodeClick={node => window.open(`https://github.com/${node.user}/${node.package}`, '_blank')}
+                    // nodeThreeObject={node => {
+                    //   const sprite = new SpriteText(node.package);
+                    //   sprite.color = node.color;
+                    //   sprite.textHeight = 5;
+                    //   return sprite;
+                    // }}
+                    width={700}
+                    height={300}
+                  /> */}
                   <Chat
                     dbSchemaImageUrl={dbSchemaImageUrl}
                     loading={loading}
@@ -418,6 +591,7 @@ const AppContent: NextPage = () => {
                     userInput={userInput}
                     llmKey = {llmKey}
                     isUserDefined = {isUserDefinedAgent}
+                    graphElements = {graphElements}
                   >
                   </Chat>
                 </Grid>

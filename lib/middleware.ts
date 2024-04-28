@@ -7,7 +7,7 @@ import { getAgentByName } from "../agents/agentRegistry";
 import { LLMDetails } from "./type";
 import { StreamingTextResponse } from 'ai';
 import { invokeFunctions } from "./semanticLayerTools/functions";
-import { getCount, getRelevantArticles, getCypher, getChartProps } from "./semanticLayerTools/tools";
+import { getCount, getRelevantArticles, getCypher, getChartProps, getArticleCountBySite, getVisualization } from "./semanticLayerTools/tools";
 import { SYSTEM_PROMPT_FUNCTION_CALLING } from "./prompt"
 
 
@@ -123,7 +123,7 @@ async function readStream(_response:StreamingTextResponse)
     return result;
 }
 
-async function cypherCleanup(generatedCypher:string){
+export async function cypherCleanup(generatedCypher:string){
 
     // Remove prepended cypher query text from LLM response
     generatedCypher = generatedCypher.toString().trim().replace('Cypher Query:','');
@@ -185,7 +185,7 @@ export async function InvokeLLMForTool(
     payload:{}
 )
 {
-    const { previous, tools, llmKey } = payload;
+    const { previous, tools, userInput, llmKey, isGraphViz } = payload;
     if (!Array.isArray(tools)) {
         return new Response('Prompt is not in correct format', {
             status: 400,
@@ -196,7 +196,9 @@ export async function InvokeLLMForTool(
         { type: 'function', function: getCount },
         { type: 'function', function: getRelevantArticles },
         { type: 'function', function: getCypher },
-        { type: 'function', function: getChartProps}
+        { type: 'function', function: getChartProps},
+        { type: 'function', function: getArticleCountBySite},
+        { type: 'function', function: getVisualization}
     ]
 
     let tools_output = []
@@ -218,10 +220,14 @@ export async function InvokeLLMForTool(
         messages = messages.concat(previous)
     }
 
+    messages.push({ role: 'user', content: userInput })
+
     messages.push({ role: 'assistant', content: null, tool_calls: tools })
     for(let output_item of tools_output) {
         messages.push(output_item)
     }
+
+    console.log("chat-history for tool: ", messages)
 
     let llmKeys = {
         OPENAI_API_KEY: llmKey.openAIKey,
@@ -229,9 +235,17 @@ export async function InvokeLLMForTool(
         AWS_ACCESS_KEY_ID: llmKey.awsAccessKeyId,
         AWS_SECRET_ACCESS_KEY: llmKey.awsSecretAccessKey
     };
-    let llmResponse = LLMCall({chatMessages:messages, tools:prededinedTools,provider:llmKey.provider, model:llmKey.model, llmKeys:llmKeys,llmFlags:{dangerouslyAllowBrowser: true}})
-    const result = await readStream(llmResponse);
-    return result;
+
+    if(!isGraphViz)
+    {
+        let llmResponse = LLMCall({chatMessages:messages, tools:prededinedTools,provider:llmKey.provider, model:llmKey.model, llmKeys:llmKeys,llmFlags:{dangerouslyAllowBrowser: true}})
+        const result = await readStream(llmResponse);
+        return result;
+    }
+    else
+    {
+        return tools_output[0].content;
+    }
 }
 
 export async function InvokeLLMForMessage(payload:{})
@@ -254,13 +268,15 @@ export async function InvokeLLMForMessage(payload:{})
     }
 
     messages.push({ role: 'user', content: userInput })
-
+    console.log("chat-history for message: ", messages)
     let prededinedTools = 
     [
         { type: 'function', function: getCount },
         { type: 'function', function: getRelevantArticles },
         { type: 'function', function: getCypher },
-        { type: 'function', function: getChartProps}
+        { type: 'function', function: getChartProps},
+        { type: 'function', function: getArticleCountBySite},
+        { type: 'function', function: getVisualization}
     ]
     let llmKeys = {
         OPENAI_API_KEY: llmDetails.openAIKey,
