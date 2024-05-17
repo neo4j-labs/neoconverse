@@ -184,12 +184,26 @@ Accepted Relationship paths or patterns
 `# Available Tools for you\n` +
 `You have the following tools that you can invoke based on the user inquiry.\n` +
 `- get_visualization. when the user wants to visualize the subgraph\n`+
+    `-Strict Response Format:Make sure to extract the paths into nodes and relationship,  you could use below cypher snippet to extract nodes and relationhsip from path\n`+
+    `WITH collect(path) as paths
+     CALL { WITH paths UNWIND paths AS path UNWIND nodes(path) as node RETURN collect(distinct node) as nodes }
+    CALL { WITH paths UNWIND paths AS path UNWIND relationships(path) as rel RETURN collect(distinct rel) as rels }
+    RETURN nodes, rels\n`+
 `- get_count, when the user wants to know the count of a particular node label in the schema.\n` +
 `- get_relevant_article, when the user want to know information from artcles, news or media.\n` +
 `- get_cypher, use this tool to generate cypher for user inquiry in the following condition,\n` +
     `- Schema is provided within <Schema> xml tag,\n` +
     `- Schema has relavant information to generate cypher for user inquiry \n` +
     `- Strict Response Format: Your responses must be in the form of executable Cypher queries only. Any explanation, context, or additional information that is not a part of the Cypher query syntax should be omitted entirely.\n` +
+    `- Here is a few shot examples for cypher generation for graph visualization \n`+
+    `User Inquiry : Visualize the investors for Google
+     and the generated cypher query could be : \n
+        MATCH path = (o:Organization{name:"Google"})-[:HAS_INVESTOR]-(a)
+        WITH collect(path) as paths
+        CALL { WITH paths UNWIND paths AS path UNWIND nodes(path) as node RETURN collect(distinct node) as nodes }
+        CALL { WITH paths UNWIND paths AS path UNWIND relationships(path) as rel RETURN collect(distinct rel) as rels }
+        RETURN nodes, rels
+    \n`+
 `- get_chart_props, use this tool as an additional step when the user inquiry ask for charts and strictly follow below instructions  \n` + 
     `- You would use the result from previous step to provide chart options for apache echart that can be used to create dynamic chart element using React.createElement to chart below data set provided inside <dataset> xml tag \n`+ 
     `- Strict Response Format: Your responses must be in the form of chart props only. Any explanation, context, or additional information that is not a part of the chart props syntax should be omitted entirely.\n` +

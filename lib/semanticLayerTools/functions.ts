@@ -53,19 +53,20 @@ async function getCypher({query=""})
     }
 }
 
-async function getVisualization({subGraphName=""})
+async function getVisualization({graphElements=""})
 {
     try 
     {
-        let cypher  = 
-        `MATCH path = (o:Organization{name:"${subGraphName}"})<-[]-(a)
-        WITH collect(path) as paths
-        CALL { WITH paths UNWIND paths AS path UNWIND nodes(path) as node RETURN collect(distinct node) as nodes }
-        CALL { WITH paths UNWIND paths AS path UNWIND relationships(path) as rel RETURN collect(distinct rel) as rels }
-        RETURN nodes, rels`
+        // let cypher  = 
+        // `MATCH path = (o:Organization{name:"${subGraphName}"})<-[]-(a)
+        // WITH collect(path) as paths
+        // CALL { WITH paths UNWIND paths AS path UNWIND nodes(path) as node RETURN collect(distinct node) as nodes }
+        // CALL { WITH paths UNWIND paths AS path UNWIND relationships(path) as rel RETURN collect(distinct rel) as rels }
+        // RETURN nodes, rels`
 
-        let result = await ExecuteCypher(true, false, "Companies",cypher, {});
-        return result;
+        // let result = await ExecuteCypher(true, false, "Companies",cypher, {});
+        // return result;
+        return JSON.parse(graphElements);
     }
     catch(error) 
     {

@@ -32,9 +32,15 @@ export const getRelevantArticles = {
     }
 }
 
+let   cypherIns =  `-Strict Response Format:Make sure to extract the paths into nodes and relationship,  you could use below cypher snippet to extract nodes and relationhsip from path\n`+
+`WITH collect(path) as paths
+ CALL { WITH paths UNWIND paths AS path UNWIND nodes(path) as node RETURN collect(distinct node) as nodes }
+CALL { WITH paths UNWIND paths AS path UNWIND relationships(path) as rel RETURN collect(distinct rel) as rels }
+RETURN nodes, rels\n`
+
 export const getCypher = {
     "name": "get_cypher",
-    "description": "Use this tool to generate cypher for user inquiry, Always use this tool if you generate cypher query as response",
+    "description": `Use this tool to generate cypher for user inquiry, Always use this tool if you generate cypher query as response, If the cypher query is generated for graph visualization then make sure to return the nodes and relationship using format like below \n ${cypherIns}`,
     "parameters": {
       "type": "object",
       "properties": {
@@ -84,17 +90,17 @@ export const getArticleCountBySite = {
 
 export const getVisualization = {
   "name": "get_visualization",
-  "description": "This function help find visualize neo4j graph, You should directly pass back the result of this tool to calling function, calling function will use this result to visualize further  ",
+  "description": "This function help find visualize neo4j graph, This tools allows you to execute the function that is relavant to user inquiry and provides you the result back in in the format of list of nodes and relationships. ",
   "parameters": {
     "type": "object",
     "properties": {
-      "subGraphName": {
+      "graphElements": {
         "type": "string",
-        "description": "Name of subgraph to visualize"
+        "description": "Json of array or nodes and relationships"
       }
     },
     "required": [
-      "subGraphName"
+      "graphElements"
     ]
   }
 }

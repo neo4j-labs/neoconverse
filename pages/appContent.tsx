@@ -27,6 +27,7 @@ const HeaderHeight = 135;
 // import ForceGraph3D from 'react-force-graph-3d';
 
 import dynamic from 'next/dynamic';
+import { getNodeCaption } from '../utils/utils';
 
 // const ForceGraph3D = dynamic(() => import("../node_modules/react-force-graph-3d"), {ssr: false})
 // import SpriteText from "//unpkg.com/three-spritetext/dist/three-spritetext.mjs";
@@ -88,6 +89,9 @@ const AppContent: NextPage = () => {
 
   const [nodes, setNodes] = useState<Node[]>([]);
   const [relationships, setRelationships] = useState<Relationship[]>([]);
+
+
+
  let json = 
   {
     "nodes": [
@@ -394,18 +398,19 @@ const AppContent: NextPage = () => {
 
             const formatedNodes: [] = nodes[0].map((g:any) => ({
               id: g.elementId,
-              size: 40,
-              captionAlign: 'bottom',
-              iconAlign: 'bottom',
-              captionHtml: <b>Test</b>,
-              caption: `${g.labels}: ${g.name}`,
+              // size: 40,
+              // captionAlign: 'bottom',
+              // iconAlign: 'bottom',
+              // captionHtml: <b>Test</b>,
+              label: `${g.labels}`,
+              caption:`${getNodeCaption(g)}`
             }));
 
             const formatedRels: [] = rels[0].map((r: any) => ({
                   id: r.elementId,
                   from: r.startNodeElementId,
                   to: r.endNodeElementId,
-                  caption: r.typeç
+                  caption: r.type
       
             }));
 
@@ -423,11 +428,15 @@ const AppContent: NextPage = () => {
               type: r.type
           }));
 
+            let nvlGraphObj = {
+              nodes:formatedNodes,
+              links:formatedRels
+            }
             let obj = {
               nodes:formatedNodes1,
               links:formatedRels1
             }
-            setGraphElements(obj)
+            setGraphElements(nvlGraphObj)
             
             const newAssistantMessage = {
               conversation_id : Date.now()+"-"+user?.name,
@@ -441,7 +450,7 @@ const AppContent: NextPage = () => {
               isChart: respondWithChart,
               cypher: "",
               chartData:{},
-              graphElements: obj,
+              graphElements: nvlGraphObj,
               role:"assistant"
             }
             setMessages((prev) => [...prev, ...[newAssistantMessage]])

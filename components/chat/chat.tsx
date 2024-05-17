@@ -36,7 +36,7 @@ import CypherEditor from "./cypherEditor"
 import SchemaModal from '../common/SchemaModal';
 import QuestionsModal from '../common/QuestionsModal';
 import GraphViz from '../common/GraphVizF3D';
-
+import GraphNVL from '../common/GraphVizNvl'
 // import dynamic from 'next/dynamic';
 // const InteractiveNvlWrapper = dynamic(() => import("@neo4j-nvl/react"), {
 //     ssr: false
@@ -48,12 +48,44 @@ import dynamic from 'next/dynamic';
 //     ssr: false
 //   });
 
+const BasicNvlWrapper = dynamic(() => import("@neo4j-nvl/react/lib/basic-wrapper/BasicNvlWrapper").then((a) => a.BasicNvlWrapper), {
+    ssr: false
+  });
+  
+  const InteractiveNvlWrapper = dynamic(() => import("@neo4j-nvl/react/lib/interactive-nvl-wrapper/InteractiveNvlWrapper").then((a) => a.InteractiveNvlWrapper), {
+    ssr: false
+  });
+
+
+
+import type { HitTargets, Node, Relationship } from '@neo4j-nvl/base'
+import NVL, { NvlOptions } from '@neo4j-nvl/base';
+
+
+  /* eslint-disable no-console */
+  const mouseEventCallbacks = {
+    onPan: true,
+    onZoom: true,
+    onDrag: true,
+  };
+  
+  const nvlOptions: NvlOptions = {
+    allowDynamicMinZoom: true,
+    disableWebGL: true,
+    maxZoom: 3,
+    minZoom: 0.05,
+    relationshipThreshold: 0.55,
+    // selectionBehaviour: 'single',
+    useWebGL: false,
+    instanceId: 'graph-preview',
+    initialZoom: 0,
+  };
+
 // const [isFullScreen, setIsFullScreen] = useState(false);
 // const graphContainerRef = useRef<HTMLDivElement>(null);
 
 // const [multiSelect, setMultiSelect] = useState(false)
 // import InteractiveNvlWrapper from '@neo4j-nvl/react';
-// import NVL, { NvlOptions } from '@neo4j-nvl/core';
 const ExtraPadding = 10;
 
 const Chat = (props) => {
@@ -193,7 +225,7 @@ const Chat = (props) => {
                                     /></span>
                             )
                             }
-                            {i != 0 && !m.isChart && (
+                            {i != 0 && !m.isChart &&  !m.graphElements?.nodes &&(
                                 <ListItemText disableTypography
                                     style={{ whiteSpace: "pre-wrap", color: "rgba(0, 0, 0, 0.6)", fontWeight: 400, fontSize: 15, fontFamily: "sans-serif" }}
                                     secondary={
@@ -273,9 +305,20 @@ const Chat = (props) => {
                                 />
                             )
                             }
-                            {i != 0 && !m.isChart && m.chartData.toString() != '' && (
-                                <GraphViz  GraphData={m.graphElements}/>
-
+                            {i != 0 && !m.isChart && m.graphElements?.nodes && (
+                                // <GraphViz  GraphData={m.graphElements}/>
+                                <div style={{width:"800px",height:"800px"}}    >
+                                    <GraphNVL GraphData={m.graphElements}/>
+                                    {/* <InteractiveNvlWrapper
+                                    nvlOptions={nvlOptions}
+                                    layout={'hierarchical'}
+                                    nodes = { graphElements.nodes }
+                                    rels = { graphElements.links }
+                                    // nodes={[{ id: '0', caption: 'graphs' }, { id: '1', caption: 'everywhere' },{ id: '2', caption: 'here' }]}
+                                    // rels={[{ from: '0', to: '1', id: '10', caption: 'are' },{ from: '0', to: '2', id: '11', caption: 'are' }]}
+                                    mouseEventCallbacks={mouseEventCallbacks}
+                                    /> */}
+                                </div>
                                 // <BasicNvlWrapper
                                 // nodes={[{ id: 0, caption: 'graphs' }, { id: 1, caption: 'everywhere' }, { id: 2, caption: 'everywhere' }]}
                                 // rels={[{ from: 0, to: 1, id: 10, caption: 'are' }, { from: 0, to: 2, id: 11, caption: 'are' }]}

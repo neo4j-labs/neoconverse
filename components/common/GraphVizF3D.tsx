@@ -11,6 +11,17 @@ const ForceGraph3D = dynamic(() => import("react-force-graph-3d"), {
     ssr: false
   });
 
+const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
+  ssr: false
+});
+
+import { CSS2DRenderer , CSS2DObject} from 'three/addons/renderers/CSS2DRenderer.js';
+
+
+// const Graph = ForceGraph3D({
+//   extraRenderers: [new CSS2DRenderer()]
+// })
+
 const initialGraphData: GraphData = {
   nodes: [{ id: '1', name: 'Node 1' }, { id: '2', name: 'Node 2' }],
   links: [{ source: '1', target: '2' }]
@@ -54,20 +65,49 @@ const GraphViz: NextPage = ({GraphData}) => {
         cursor: 'pointer'  // Ensures cursor changes on hover over the div
       }
     }}>
-      <ForceGraph3D 
+      <ForceGraph2D 
         graphData={GraphData}
-        width={isFullScreen ? window.innerWidth : 700}
+        width={isFullScreen ? window.innerWidth : 1200}
         height={isFullScreen ? window.innerHeight : 300}
         backgroundColor="#FFFFFF"  // White background
         nodeLabel="name"
-        nodeAutoColorBy="name"
-        linkColor={() => 'rgba(50, 50, 50, 0.2)'}
+        nodeAutoColorBy="label"
+        linkCurvature={"curvature"}
+        linkLabel = {"type"}
+        linkOpacity ={ 0.8 }
+        linkColor={() => 'rgba(50, 50, 50, 0.8)'}
+        nodeCanvasObjectMode={() => "after"}
+        zoomToFit={0}
+        nodeThreeObjectExtend={true}
+        nodeThreeObject = {(node)=> {
+            const nodeEl = document.createElement('Box');
+            nodeEl.textContent = node.name;
+            nodeEl.style.color = node.color;
+            // nodeEl.className = 'node-label';
+            return new CSS2DObject(nodeEl);
+          }
+        }
         nodeCanvasObject={(node, ctx, globalScale) => {
           const label = node.name;
-          const fontSize = 12/globalScale;
-          ctx.fillStyle = '#333333'; // Dark grey for visibility
+          const fontSize = 14 / (globalScale * 1.2)
           ctx.font = `${fontSize}px Sans-Serif`;
+          const textWidth = ctx.measureText(label).width;
+          const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
+
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = node.color;
           ctx.fillText(label, node.x, node.y);
+
+          node.__bckgDimensions = bckgDimensions; // to re-use in nodePointerAreaPaint
+        }}
+        nodePointerAreaPaint={(node, color, ctx) => {
+          ctx.fillStyle = color;
+          const bckgDimensions = node.__bckgDimensions;
+          bckgDimensions && ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
         }}
       />
       <IconButton
