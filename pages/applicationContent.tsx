@@ -14,7 +14,7 @@ import AgentList from '../components/agent/agentList';
 import Chat from '../components/chat/chat';
 import { runNeoApi } from '../components/database/runNeoApi';
 import save_convo from './api/call_api';
-import { GenerateContent, ExecuteCypher } from '../lib/middleware';
+import { GenerateContent, ExecuteCypher, InvokeLLMForMessage, InvokeLLMForTool } from '../lib/middleware';
 import * as prompts from '../lib/prompt';
 import { getUser } from './api/authHelper';
 import { track, Events } from '../components/common/tracking';
@@ -199,7 +199,7 @@ const ApplicationContent: NextPage = () => {
     }
   };
 
-  const StreamResponse = async (e: any) => {
+  const StreamResponseOld = async (e: any) => {
     e.preventDefault();
 
     // Enable progress loading bar while response is being generated
@@ -422,6 +422,237 @@ const ApplicationContent: NextPage = () => {
       {
           ExecuteCypher(true, true, currentAgent.title, cypherQuery,{})
       }
+  };
+
+  const isValidJSON = str => {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  function chartPropsCleanup(generatedChartProps:string){
+
+    let chartConfStr = generatedChartProps.replaceAll('```','').replace("json",'').replace("jsx",'').replace("const option =",'')
+    chartConfStr =chartConfStr.toString().trim().startsWith("{")? chartConfStr.toString().trim().replace(';',''): "{"+chartConfStr.toString().trim().replace(';','') ;
+
+    // Add any additional cypher generation logic here
+    return chartConfStr;
+  } 
+
+  const StreamResponse = async (e: any) => {
+    e.preventDefault();
+
+    // Enable progress loading bar while response is being generated
+    setLoading(true);
+    if(context === "")
+    {
+      setContext((prev) => prev + '\n' +userInput.toString()+ '\n');
+    }
+    else
+    {
+      setContext((prev) => prev + '\n\n' +userInput.toString()+ '\n');
+    }
+
+    // Refresh the chat list 
+    const userData = messages.slice(0);
+    userData.push({
+      conversation_id : Date.now()+"-"+user?.name,
+      text: userInput,
+      date: new Date(),
+      agent: selectedAgentKey,
+      author: {
+        name: "User"
+      },
+      avatar: "/userProfile.jpeg",
+      isChart: respondWithChart,
+      cypher: "",
+      chartData:{},
+      // graphElements: {},
+      role:"user"
+    })
+
+    setMessages([...userData]);
+
+    let currentAgent = agents.find(agent => agent?.key === selectedAgentKey);
+    let isUserDefined: boolean = (currentAgent?.userDefined === true) ? true : false;
+
+    // TODO: we may want to restrict the total string size of user-defined schemas/fewshots
+
+    track(Events.AskQuestion, { 
+      saveConvoOn: (isUserDefined) ? currentAgent.saveConvo : process.env.NEXT_PUBLIC_SAVE_CONVERSATION,
+      isChart: respondWithChart,
+      isUserDefined: isUserDefined,
+      key: (isUserDefined) ? 'UserDefined' : currentAgent?.key,
+      // TODO: provider defined below for neo4j agents should come from the agentRegistry
+      aiService: (isUserDefined) ? currentAgent?.aiService : "Open AI"
+    });      
+
+    
+    // Filter the array to exclude the first element and any element where isChart is true
+    const filteredMessages = messages.filter((message, index) => index !== 0 && !message.isChart && message.agent==selectedAgentKey);
+
+    // Slice the array to get the last two conversation after filtering
+    const lastTwoMessages = filteredMessages.slice(-6);
+
+    // Concatenate the text of the last two messages, with a newline character in between
+    const convoHistory = lastTwoMessages.map(message => message.text).join("\n");
+
+    let previous = filteredMessages.map((item) => {
+        return {
+            role: item.role,
+            content: item.text,
+        }
+    })
+
+    let availableTools =currentAgent?.toolsData;
+    let schema = currentAgent?.schema;
+    let result_tools = []
+    let isCompleted = false
+    let MAX_LOOP_COUNT = 10 // Don't want to let it run loose
+    let loopCount = 0
+
+    try {  
+      do {
+          const functionToCall = result_tools.length > 0 ? InvokeLLMForTool : InvokeLLMForMessage
+          const payload = result_tools.length > 0 ? {agent: currentAgent?.title, schema:schema, availableTools:availableTools, tools: result_tools, previous, userInput, llmKey, isGraphViz:false } : { schema:schema, availableTools:availableTools, userInput: userInput, previous, llmKey, isGraphViz:true  }
+          
+          let result = await functionToCall((payload));
+          
+          const reader = result?.body?.getReader();
+
+          if(reader)
+          {
+            const newAssistantMessage = {
+                    conversation_id : Date.now()+"-"+user?.name,
+                    text: "",
+                    date: new Date(),
+                    agent: selectedAgentKey,
+                    author: {
+                      name: "assistant"
+                    },
+                    avatar: currentDomainImage,
+                    isChart: respondWithChart,
+                    cypher: "",
+                    chartData: {},
+                    graphElements: {},
+                    role:"assistant"
+                  }
+                  setMessages((prev) => [...prev, ...[newAssistantMessage]])
+
+            let chunks = ""
+            while (true) {
+                const { done, value } = await reader?.read();
+                let chunkValue = new TextDecoder().decode(value);
+                chunks+=chunkValue;
+                setContext((prev) => prev + chunkValue);
+                !respondWithChart ?  newAssistantMessage.text = newAssistantMessage.text + chunkValue : ""
+                if (done) {
+                    break;
+                }
+            }
+            previous.push({ role: 'assistant', content: chunks })
+          }
+          else{
+            let isJsonresult = isValidJSON(result)
+            result = respondWithChart?chartPropsCleanup(result):result;
+            if( !isJsonresult) {
+                console.log("result : ", result)
+                const newAssistantMessage1 = {
+                conversation_id : Date.now()+"-"+user?.name,
+                text: result,
+                date: new Date(),
+                agent: selectedAgentKey,
+                author: {
+                  name: "assistant"
+                },
+                avatar: currentDomainImage,
+                isChart: respondWithChart,
+                cypher: "",
+                chartData:respondWithChart?JSON.parse(result):{},
+                graphElements: {},
+                role:"assistant"
+              }
+              setMessages((prev) => [...prev, ...[newAssistantMessage1]])
+              previous.push({ role: 'assistant', content: result.content })
+            }
+          }
+          // console.log(result)
+          let isJsonresult = isValidJSON(result)
+
+          result = respondWithChart?chartPropsCleanup(result):result;
+
+          // if( !isJsonresult) {
+          //       console.log("result : ", result)
+          //       const newAssistantMessage1 = {
+          //       conversation_id : Date.now()+"-"+user?.name,
+          //       text: result,
+          //       date: new Date(),
+          //       agent: selectedAgentKey,
+          //       author: {
+          //         name: "assistant"
+          //       },
+          //       avatar: currentDomainImage,
+          //       isChart: respondWithChart,
+          //       cypher: "",
+          //       chartData:respondWithChart?JSON.parse(result):{},
+          //       graphElements: {},
+          //       role:"assistant"
+          //     }
+          //     setMessages((prev) => [...prev, ...[newAssistantMessage1]])
+          //     previous.push({ role: 'assistant', content: result.content })
+          // }
+          // if(isJsonresult && JSON.parse(result).result)
+          // {
+
+          //   const newAssistantMessage = {
+          //     conversation_id : Date.now()+"-"+user?.name,
+          //     text: result,
+          //     date: new Date(),
+          //     agent: selectedAgentKey,
+          //     author: {
+          //       name: "assistant"
+          //     },
+          //     avatar: currentDomainImage,
+          //     isChart: respondWithChart,
+          //     cypher: "",
+          //     chartData:{},
+          //     // graphElements: nvlGraphObj,
+          //     role:"assistant"
+          //   }
+          //   setMessages((prev) => [...prev, ...[newAssistantMessage]])
+          //   previous.push({ role: 'assistant', content: result.content })
+          // }
+
+          if(isJsonresult && JSON.parse(result).tool_calls) {
+            console.log("tool calls : ", JSON.parse(result).tool_calls)
+
+              loopCount++
+              if(loopCount >= MAX_LOOP_COUNT) {
+                  isCompleted = true
+              } else {
+                  result_tools = JSON.parse(result).tool_calls
+              }
+          } else {
+              isCompleted = true
+          }
+      } while(!isCompleted)
+      setUserInput("");
+
+  } catch(error) {
+      console.log(error.name, error.message)
+      setUserInput("");
+
+  } finally {
+      setLoading(false)
+      setUserInput("");
+
+      setTimeout(() => {
+          // inputRef.current.focus()
+      }, 100)
+  }
   };
 
   function getDomainFromEmail(email: string): string {

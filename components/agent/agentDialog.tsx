@@ -7,6 +7,11 @@ import { Stack } from '@mui/system';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
+import Tools from './toolsForLLM';
+import { Tool, Property } from '../../lib/type'
+import JsonPrettifier from '../common/JsonPrettifier';
+import {ExecuteCypher} from '../../lib/middleware'
+import {GET_SCHEMA_CYPHER}  from '../../lib/cypherQuery'
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -80,7 +85,8 @@ interface DialogData {
   awsAccessKeyId: string,
   awsSecretAccessKey: string,
   awsModel: string, 
-  aimodel: string
+  aimodel: string,
+  toolsData: Tool[]
 }
 
 interface AgentDialogProps {
@@ -142,7 +148,8 @@ const aiOptions = ['Open AI', 'Google Vertex AI', 'AWS Bedrock'];
         openAIModel: '', 
         googleModel: '',
         awsModel: '',
-        aimodel: ''
+        aimodel: '', 
+        toolsData: []
       
     }
 
@@ -152,7 +159,20 @@ const aiOptions = ['Open AI', 'Google Vertex AI', 'AWS Bedrock'];
       dataModel: '',
       fewshot: []
     };
-
+    initAgent.toolsData = (agentData?.toolsData) ? agentData.toolsData : {
+      name: "",
+      description: "",
+      parameters: {
+        type: "",
+        properties: {
+          "": {
+            type: "",
+            description: "",
+          },
+        },
+        required: []
+      }
+    };
 
     return initAgent;
   });
@@ -242,6 +262,13 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
     // setIsSaveConvoOn(event.target.checked);
   };
 
+  // Handle the get schema button click under Schema tab
+  // Todo remove hardcoded agent key
+  const handleGetSchema = async (event) => {
+    let result = await ExecuteCypher(true, false, data.title, GET_SCHEMA_CYPHER, {});
+    setData({ ...data, schema: result.result });
+  }
+
   // State to manage whether the switch is checked or not
   const [useSameConnection, setUseSameConnection] = useState(false);
 
@@ -264,15 +291,9 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, key: 'icon' | 'schemaDiagram') => {
-    const file = event.target.files ? event.target.files[0] : null;
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setData({ ...data, [key]: reader.result as string });
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleToolsChange = (tools: Tool[]) => {
+    // setToolsData(tools);
+    localStorage.setItem('tools', JSON.stringify(tools));
   };
 
   //console.log('data: ', data);
@@ -306,6 +327,8 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
               <Tab label="Gen AI API" {...a11yProps(2)} />
               <Tab label="Schema" {...a11yProps(3)} />
               <Tab label="Few shot examples" {...a11yProps(4)} />
+              <Tab label="Tools for LLM" {...a11yProps(5)} />
+
             </Tabs>
 
             {/* General */}
@@ -544,14 +567,25 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
 
             {/* Schema */}
             <TabPanel value={value} index={3}>
-              <TextField
+              <Button
+              onClick={handleGetSchema}
+              > Get Schema from DB </Button>
+              {/* <TextField
                 name="schema"
                 multiline
                 fullWidth
                 rows={20}
                 value={data.schema}
                 onChange={handleChange}
-              />
+              /> */}
+              {/* <textarea
+                style={{ width: '100%', height: '200px' }}
+                value={data.schema}
+                onChange={handleChange}
+                placeholder="Enter JSON text here"
+              /> */}
+              <JsonPrettifier jsonText={data.schema} />
+
             </TabPanel>
 
             {/* Few shot examples */}
@@ -561,6 +595,12 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
                 onChange={(newFewshot) => setData({ ...data, fewshot: newFewshot })}
               />
             </TabPanel>
+
+            {/* Tools for LLM */}
+            <TabPanel value={value} index={5}>
+              <Tools toolsData={data.toolsData} onToolsChange={(newTool) => setData({ ...data, toolsData: newTool })} />
+            </TabPanel>
+
           </Box>
         </DialogContent>
         <DialogActions>

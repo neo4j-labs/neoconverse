@@ -21,6 +21,7 @@ import AgentDialog from './agentDialog';
 import { Props } from 'next/script';
 import { Stack } from '@mui/system';
 import { getAgents, saveLocalAgent, removeLocalAgent } from '../../agents/agentRegistry';
+import { Tool, Property } from '../../lib/type';
 
 const AgentList = (props) => {
 
@@ -44,7 +45,8 @@ const AgentList = (props) => {
           },
           openAIModel: '', 
           googleModel: '',
-          awsModel: ''
+          awsModel: '',
+          toolsData: []
       });;
 
     type QAPair = {
@@ -77,7 +79,8 @@ const AgentList = (props) => {
         userDefined: boolean,
         openAIModel: string, 
         googleModel: string,
-        awsModel: string
+        awsModel: string,
+        toolsData: Tool[]
     }
 
     interface AgentData {
@@ -141,7 +144,8 @@ const AgentList = (props) => {
             promptParts: {
               dataModel: '',
               fewshot: []
-            }
+            },
+            toolsData:[]
         });
 
         setDialogOpen(true);
@@ -285,7 +289,7 @@ const AgentList = (props) => {
                                                                         </DeleteIcon>
                                                                     </Tooltip>
                                                                     {
-                                                                        (agentInfo?.schema.trim() === "") ?
+                                                                        (agentInfo?.schema.size === 0) ?
                                                                             <Tooltip  
                                                                             title={
                                                                                 <div style={{ whiteSpace: 'pre-line' }}>{`One of the following critical information is missing for this agent \n
@@ -423,7 +427,7 @@ const AgentList = (props) => {
                                                                         </DeleteIcon>
                                                                     </Tooltip>
                                                                     {
-                                                                        (agentInfo?.schema.trim() === "") ?
+                                                                        (agentInfo?.schema.size === 0) ?
                                                                             <Tooltip  
                                                                             title={
                                                                                 <div style={{ whiteSpace: 'pre-line' }}>{`One of the following critical information is missing for this agent \n
