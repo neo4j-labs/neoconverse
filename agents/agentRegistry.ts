@@ -48,18 +48,25 @@ export const initAgents = async () => {
 
 export const getRemoteAgents = async () => {
     let result = await runNeoApi(NeoDatabaseConstants.BackendDatabaseKey, FrontEndAgentQuery);
-    let agents = await Promise.all(result?.result?.map(async (row) =>  {
-        let agentInfo = row?.agentInfo;
-        let promptProvider = PredefinedPromptProviders[agentInfo.key];
-        //console.log('agentInfo.key: ', agentInfo.key);
-        if (promptProvider) {
-            //console.log('using prompt provider');
-            agentInfo.promptParts.dataModel = await promptProvider.getDataModel();
-            agentInfo.promptParts.fewshot = await promptProvider.getFewshot();
-        }
-        return agentInfo;
-    }));
-    return agents;
+    try {
+        let agents = await Promise.all(result?.result?.map(async (row) =>  {
+            let agentInfo = row?.agentInfo;
+            let promptProvider = PredefinedPromptProviders[agentInfo.key];
+            //console.log('agentInfo.key: ', agentInfo.key);
+            if (promptProvider) {
+                //console.log('using prompt provider');
+                agentInfo.promptParts.dataModel = await promptProvider.getDataModel();
+                agentInfo.promptParts.fewshot = await promptProvider.getFewshot();
+            }
+            return agentInfo;
+        }));
+        return agents
+    }
+    catch(e)
+    {
+        return [];
+    }
+    // return agents;
 }
 
 export const getLocalAgents = () => localAgents;

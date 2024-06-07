@@ -107,7 +107,7 @@ const Home: NextPage = () => {
               <img
                 height="24"
                 width="auto"
-                src="https://dist.neo4j.com/wp-content/uploads/20210422140034/Neo4j-logo_color.png"
+                src="/neologofull.png"
                 alt="Logo"
                 style={{ marginRight: '18px', marginTop: '12px' }}
               />

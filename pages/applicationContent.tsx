@@ -86,7 +86,7 @@ const ApplicationContent: NextPage = () => {
         name: "ai"
       },
       agent:"System",
-      avatar: '/Neo4j-icon-color.png',
+      avatar: '/neologo.png',
       isChart: false,
       chartData: {},
       cypher:  ""
