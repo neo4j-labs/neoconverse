@@ -285,7 +285,7 @@ const AgentList = (props) => {
                                                                         </DeleteIcon>
                                                                     </Tooltip>
                                                                     {
-                                                                        (agentInfo?.schema.trim() === "") ?
+                                                                        (agentInfo?.schema === "") ?
                                                                             <Tooltip  
                                                                             title={
                                                                                 <div style={{ whiteSpace: 'pre-line' }}>{`One of the following critical information is missing for this agent \n
@@ -423,7 +423,7 @@ const AgentList = (props) => {
                                                                         </DeleteIcon>
                                                                     </Tooltip>
                                                                     {
-                                                                        (agentInfo?.schema.trim() === "") ?
+                                                                        (agentInfo?.schema === "") ?
                                                                             <Tooltip  
                                                                             title={
                                                                                 <div style={{ whiteSpace: 'pre-line' }}>{`One of the following critical information is missing for this agent \n

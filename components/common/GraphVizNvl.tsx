@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { NextPage } from 'next';
-
+import BusinessIcon from '@mui/icons-material/Business';
 const BasicNvlWrapper = dynamic(() => import("@neo4j-nvl/react/lib/basic-wrapper/BasicNvlWrapper").then((a) => a.BasicNvlWrapper), {ssr: false });
 const InteractiveNvlWrapper = dynamic(() => import("@neo4j-nvl/react/lib/interactive-nvl-wrapper/InteractiveNvlWrapper").then((a) => a.InteractiveNvlWrapper), {ssr: false});
 import type { HitTargets, Node, Relationship } from '@neo4j-nvl/base';
@@ -98,15 +98,19 @@ const GraphNVL: NextPage = ({GraphData}) => {
     //   });
     });
 
+   
     let newNodes = [];
     GraphData.nodes.forEach((node) => {
+    
         newNodes.push({
             id: node.id,
             size: 25,
             captionAlign: 'bottom',
-            iconAlign: 'bottom',
-            captionHtml: <b>Test</b>,
-            caption: node.caption,
+            iconAlign: 'middle',
+            html:`<div> test</div>`,
+            // caption: node.caption,
+            icon:`realtorchat.png`,
+            captions: [{ value: node.caption ? `${node.caption}` : `${node.caption}`, styles: ["light"] }],
             color: schemeVal[node.label],
           });
       });
