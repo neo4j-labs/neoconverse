@@ -86,6 +86,9 @@ interface DialogData {
   awsSecretAccessKey: string,
   awsModel: string, 
   aimodel: string,
+  azureEndpoint:string,
+  azureKey:string,
+  azureDeployment:string,
   toolsData: Tool[]
 }
 
@@ -97,7 +100,7 @@ interface AgentDialogProps {
 }
 
 const AgentDialog: React.FC<AgentDialogProps> = ({ open, agentData, onSave, onClose }) => {
-const aiOptions = ['Open AI', 'Google Vertex AI', 'AWS Bedrock'];
+const aiOptions = ['Open AI', 'Google Vertex AI', 'AWS Bedrock', 'Azure OpenAI'];
   const label = { inputProps: { 'aria-label': 'save conversation' } };
 
   const defaultSettings = {
@@ -115,8 +118,10 @@ const aiOptions = ['Open AI', 'Google Vertex AI', 'AWS Bedrock'];
     openAIModel: '', 
     googleModel: '',
     awsModel: '',
-    aimodel: ''
-  
+    aimodel: '',
+    azureEndpoint:'',
+    azureKey:'',
+    azureDeployment:''
   };
 
   const [settings, setSettings] = React.useState({ ...defaultSettings });
@@ -149,6 +154,9 @@ const aiOptions = ['Open AI', 'Google Vertex AI', 'AWS Bedrock'];
         googleModel: '',
         awsModel: '',
         aimodel: '', 
+        azureEndpoint:'',
+        azureKey:'',
+        azureDeployment:'',
         toolsData: []
       
     }
@@ -242,6 +250,16 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
             </Stack>
           </Grid>
         );
+        case 'Azure OpenAI':
+          return (
+            <Grid item xs={12}>
+              <Stack direction="row" spacing={2}>
+                <TextField label="Azure OpenAI Endpoint" name="azureEndpoint" value={data.azureEndpoint} onChange={handleChange} fullWidth />
+                <TextField label="Azure Key" name="azureKey" type="password" value={data.azureKey} onChange={handleChange} fullWidth />
+                <TextField label="Deployment name" name="azureDeployment" value={data.azureDeployment} onChange={handleChange} fullWidth />
+              </Stack>
+            </Grid>
+          );
       default:
         return null;
     }

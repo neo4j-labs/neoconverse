@@ -179,7 +179,9 @@ ${schemaFormatted}
 `When you fill up some of the required information yourself, be sure to confirm to user before proceeding.\n` +
 `While returning appropiate tools for execution, strictly do not include another other explaination.\n` +
 `Aside from the listed functions above, answer all other inquiries by telling the user that it is out of scope of your ability.\n\n` +
-`If any of the tool responded with an exception, take it as feedback and synthesize the error and retry \n\n` 
+`If any of the tool responded with an exception, take it as feedback and synthesize the error and retry \n\n` +
+`If the response exceeds 3500 tokens, summarize the response to be with 3500 tokens \n\n` +
+`while returning tools strictly return the tool calls without any additional explanation \n\n` 
 
 
     return template;

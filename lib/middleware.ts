@@ -27,7 +27,11 @@ export async function GenerateContent(
             OPENAI_API_KEY: llmDetails.openAIKey,
             GOOGLE_API_KEY: llmDetails.googleAPIKey,
             AWS_ACCESS_KEY_ID: llmDetails.awsAccessKeyId,
-            AWS_SECRET_ACCESS_KEY: llmDetails.awsSecretAccessKey
+            AWS_SECRET_ACCESS_KEY: llmDetails.awsSecretAccessKey,
+            AZURE_OPENAI_ENDPOINT: llmDetails.azureEndpoint,
+            AZURE_OPENAI_KEY:llmDetails.azureKey,
+            AZURE_DEPLOYMENT:llmDetails.azureDeployment
+
         };
         if (llmDetails.provider === LLMProvider.OPENAI) {
             llmRequestParams.llmFlags = { dangerouslyAllowBrowser: true }
@@ -236,16 +240,34 @@ export async function InvokeLLMForTool(
     // let system_prompt = "You are a helpful assistant suppporting NeoConverse web application that enables natural language interaction with Neo4j databases"
     let system_prompt = SYSTEM_PROMPT_FUNCTION_CALLING(schema)
     let messages = [{ role: 'system', content: system_prompt }]
-    if(previous?.length > 0) {
-        messages = messages.concat(previous)
+
+    if (previous?.length > 0) {
+        const hasSystemRole = previous.some(message => message.role === 'system');
+        const hasSameUserInput= previous.some(message => message.content === userInput);
+
+        if (!hasSameUserInput) {
+            messages = messages.concat(previous);
+            messages.push({ role: 'user', content: userInput })
+
+        }
+        else
+        {
+            messages = previous;
+        }
+    }
+    else
+    {
+        messages.push({ role: 'user', content: userInput })
     }
 
-    messages.push({ role: 'user', content: userInput })
 
+    let currentToolMessage = []
     messages.push({ role: 'assistant', content: null, tool_calls: tools })
     for(let output_item of tools_output) {
         messages.push(output_item)
+        currentToolMessage.push(output_item)
     }
+    // messages.concat(currentToolMessage);
 
     console.log("chat-history for tool: ", messages)
 
@@ -253,18 +275,22 @@ export async function InvokeLLMForTool(
         OPENAI_API_KEY: llmKey.openAIKey,
         GOOGLE_API_KEY: llmKey.googleAPIKey,
         AWS_ACCESS_KEY_ID: llmKey.awsAccessKeyId,
-        AWS_SECRET_ACCESS_KEY: llmKey.awsSecretAccessKey
+        AWS_SECRET_ACCESS_KEY: llmKey.awsSecretAccessKey,
+        AZURE_OPENAI_ENDPOINT: llmKey.azureEndpoint,
+        AZURE_OPENAI_KEY:llmKey.azureKey,
+        AZURE_DEPLOYMENT:llmKey.azureDeployment
     };
 
     if(!isGraphViz)
     {
         let llmResponse = LLMCall({chatMessages:messages, tools:prededinedTools,provider:llmKey.provider, model:llmKey.model, llmKeys:llmKeys,llmFlags:{dangerouslyAllowBrowser: true}})
         // const result = await readStream(llmResponse);
-        return llmResponse;
+        return [ llmResponse, messages ]
     }
     else
     {
-        return tools_output[0].content;
+        let content = tools_output[0].content
+        return [content, messages ]
     }
 }
 
@@ -325,5 +351,5 @@ export async function InvokeLLMForMessage(payload:{})
 
     let llmResponse = LLMCall({chatMessages:messages, tools:prededinedTools,provider:llmDetails.provider, model:llmDetails.model, llmKeys:llmKeys,llmFlags:{dangerouslyAllowBrowser: true}})
     const result = await readStream(llmResponse);
-    return result;
+    return [result, messages]
 }

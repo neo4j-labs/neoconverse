@@ -4,6 +4,9 @@ export interface LLMDetails {
     googleAPIKey?: string;
     awsAccessKeyId?: string;
     awsSecretAccessKey?: string;
+    azureEndpoint?: string;
+    azureKey?: string;
+    azureDeployment?: string;
     model?:string
   };
   

@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, forwardRef } from "react";
 
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
@@ -38,9 +38,10 @@ import QuestionsModal from '../common/QuestionsModal';
 
 const ExtraPadding = 10;
 
-const Chat = (props) => {
+const Chat = forwardRef((props, ref) => {
 
     let {
+        chatProgress,
         dbSchemaImageUrl,
         loading,
         messages,
@@ -71,13 +72,19 @@ const Chat = (props) => {
     const [schemaModalVisible, setSchemaModalVisible] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const [initialized, setInitialized] = useState(false);
+    const [progress, setProgress] = useState("Invoking LLM");
 
     useEffect(() => {
         if (!initialized) {
             setBioRef(bioRef);
             setInitialized(true);
+            setProgress(chatProgress)
         }
     }, [initialized])
+
+    const updateProgress= (newData) =>{
+        setProgress(newData)
+    }
 
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
@@ -89,7 +96,7 @@ const Chat = (props) => {
 
     const howCanIHelpYouHeight = () => {
         if (howCanIHelpRef.current) {
-            return howCanIHelpRef.current.clientHeight;
+            return howCanIHelpRef.current.clientHeight+80;
         } else {
             return 50;
         }
@@ -268,6 +275,10 @@ const Chat = (props) => {
                     </div>
                 ))}
             </List>
+            <TextField ref={ref} fullWidth id="standard-basic" label={progress} variant="standard"
+                sx={{ fontWeight: 400, fontSize: 15 }}
+                multiline>
+           </TextField>
             <TextField ref={howCanIHelpRef} fullWidth id="standard-basic" label="How can i help you today ?" variant="standard"
                 sx={{ fontWeight: 400, fontSize: 15 }}
                 multiline
@@ -353,5 +364,6 @@ const Chat = (props) => {
         </>
     )
 }
+)
 
 export default Chat;

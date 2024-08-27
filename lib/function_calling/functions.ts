@@ -100,6 +100,45 @@ async function CypherExecutionTool(agent:string, tool: any[], args: Record<strin
     return result;
 }
 
+// Define the type for the response
+interface ApiResponse {
+    data: any;
+    status: number;
+    statusText: string;
+  }
+
+async function APICallTool(agent:string, tool: any[], args: Record<string, any> = {}) {
+    const templateString = tool[0].categorical_input;
+    
+    // Replace placeholders with corresponding values from args
+    const url = templateString.replace(/\${(.*?)}/g, (_, g) => args[g.trim()]);
+    
+    console.log('API:', url);
+    try {
+        const response = await fetch(url, {
+          method: 'GET', // You can change the method to POST, PUT, DELETE, etc.
+          headers: {
+            'Content-Type': 'application/json',
+            // Add any other headers you need
+          },
+        });
+    
+        const data = await response.json();
+        
+        // Create the ApiResponse object
+        const apiResponse: ApiResponse = {
+          data,
+          status: response.status,
+          statusText: response.statusText,
+        };
+    
+        return apiResponse;
+      } catch (error) {
+        // Handle the error appropriately in your application
+        throw new Error(`Failed to fetch data from API: ${(error as Error).message}`);
+      }
+}
+
 export async function invokeFunctions(agent, tool, function_name="", function_args={} ) {
     
     console.log("tool.categorical_value", tool)
@@ -107,6 +146,8 @@ export async function invokeFunctions(agent, tool, function_name="", function_ar
     switch(tool[0]?.category) {
         case 'Cypher Execution':
             return await CypherExecutionTool(agent, tool, function_args)
+        case 'API Call':
+            return await APICallTool(agent, tool, function_args)
 
     }
     switch(function_name) {

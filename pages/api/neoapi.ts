@@ -20,14 +20,21 @@ if (global && typeof global.window === 'undefined') {
   global.window.navigator.userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36';
 }
 
+if ("NEXT_PUBLIC_BACKEND_DATABASE" in process.env) {
+  console.log('It is set!');
+} else {
+  console.log('No set!');
+}
+
+
 const NeoDatabaseBackendConfig: Agent = {
   key: NeoDatabaseConstants.BackendDatabaseKey,
-  databaseInfo: {
+  databaseInfo: ("NEXT_PUBLIC_BACKEND_DATABASE" in process.env) ?{
     databaseName: process.env.NEXT_PUBLIC_BACKEND_DATABASE,
     hostUrl: process.env.NEXT_PUBLIC_BACKEND_HOST, 
     username: process.env.NEXT_PUBLIC_BACKEND_UNAME,
     password: process.env.NEXT_PUBLIC_BACKEND_PWD
-  }
+  }:undefined
 }
 
 let NeoAgents: Map<String, Agent> = {};

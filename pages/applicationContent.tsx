@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import { styled } from '@mui/material/styles';
 import type { NextPage } from "next";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, createRef } from "react";
 
 import { Divider } from "@mui/material";
 
@@ -21,7 +21,9 @@ import { track, Events } from '../components/common/tracking';
 import { LLMDetails } from '../lib/type';
 import {SAVE_CONVO_CYPHER} from '../lib/cypherQuery'
 import { userInfo } from 'os';
+import { SYSTEM_PROMPT_FUNCTION_CALLING } from '../lib/prompt';
 const HeaderHeight = 135;
+
 
 type Message =  {
   text: any;
@@ -64,6 +66,9 @@ const ApplicationContent: NextPage = () => {
     { question: 'Question 4', priority: 4 },
     { question: 'Question 5', priority: 5 }
   ]);
+  const [chatProgress, setChatProgress]= useState('Invoking LLM ...');
+  const childRef = useRef<null | HTMLDivElement>(null);
+
   // 
   type ChatGPTAgent = "user" | "system";
 
@@ -71,6 +76,7 @@ const ApplicationContent: NextPage = () => {
     role: ChatGPTAgent;
     content: string;
   }
+
 
   //const [selectedAgentKey, setSelectedAgentKey] = useState(NeoAgents.MicrosoftGraph.key);
   const [selectedAgentKey, setSelectedAgentKey] = useState("");
@@ -86,7 +92,7 @@ const ApplicationContent: NextPage = () => {
         name: "ai"
       },
       agent:"System",
-      avatar: '/Neo4j-icon-color.png',
+      avatar: '/neologo.png',
       isChart: false,
       chartData: {},
       cypher:  ""
@@ -115,6 +121,13 @@ const ApplicationContent: NextPage = () => {
             provider: currentAgent.aiService,
             model: currentAgent.awsModel,
           };
+          case 'Azure OpenAI':
+            return {
+              azureEndpoint: currentAgent.azureEndpoint,
+              azureKey: currentAgent.azureKey,
+              azureDeployment: currentAgent.azureDeployment,
+              provider: currentAgent.aiService,
+            };
         default:
           return {};
       }
@@ -455,6 +468,7 @@ const ApplicationContent: NextPage = () => {
     {
       setContext((prev) => prev + '\n\n' +userInput.toString()+ '\n');
     }
+    setChatProgress("Invoking LLM for finding tool to use")
 
     // Refresh the chat list 
     const userData = messages.slice(0);
@@ -513,16 +527,30 @@ const ApplicationContent: NextPage = () => {
     let isCompleted = false
     let MAX_LOOP_COUNT = 10 // Don't want to let it run loose
     let loopCount = 0
-
+    let messagesTmp = [];
     try {  
       do {
+
+          // if (childRef.current) {
+          //   childRef.current.textContent = "Calling LLM";
+          // }
+          // previous = previous.concat(messagesTmp);
           const functionToCall = result_tools.length > 0 ? InvokeLLMForTool : InvokeLLMForMessage
           const payload = result_tools.length > 0 ? {agent: currentAgent?.title, schema:schema, availableTools:availableTools, tools: result_tools, previous, userInput, llmKey, isGraphViz:false } : { schema:schema, availableTools:availableTools, userInput: userInput, previous, llmKey, isGraphViz:true  }
           
-          let result = await functionToCall((payload));
-          
-          const reader = result?.body?.getReader();
+          let [result, messages] = await functionToCall((payload));
+          if(functionToCall.name == 'InvokeLLMForTool')
+          {
+            // for(let message of messages) {
+              previous = (messages)
+            //  }
+          }
 
+          let response = (result instanceof Promise) ? await result : result;
+          const reader = response?.body?.getReader();
+
+          // const reader = await result?.body?.getReader();
+          let chunks = ""
           if(reader)
           {
             const newAssistantMessage = {
@@ -540,20 +568,36 @@ const ApplicationContent: NextPage = () => {
                     graphElements: {},
                     role:"assistant"
                   }
-                  setMessages((prev) => [...prev, ...[newAssistantMessage]])
+                  let firstChunkContainsTools = false;
+                  let firstChunkProcessed = false;
+                  while (true) {
+                      const { done, value } = await reader?.read();
+                      let chunkValue = new TextDecoder().decode(value);
+                      chunks+=chunkValue;
 
-            let chunks = ""
-            while (true) {
-                const { done, value } = await reader?.read();
-                let chunkValue = new TextDecoder().decode(value);
-                chunks+=chunkValue;
-                setContext((prev) => prev + chunkValue);
-                !respondWithChart ?  newAssistantMessage.text = newAssistantMessage.text + chunkValue : ""
-                if (done) {
-                    break;
-                }
-            }
-            previous.push({ role: 'assistant', content: chunks })
+                          // Check the first chunk for "tools"
+                      if (!firstChunkProcessed) {
+                          firstChunkProcessed = true;
+                          if (chunkValue.includes("tool")) {
+                              firstChunkContainsTools = true;
+                          }
+                          else
+                          {
+                            setMessages((prev) => [...prev, ...[newAssistantMessage]])
+                          }
+                      }
+                          // Only execute if the first chunk does not contain "tools"
+                      if (!firstChunkContainsTools && !respondWithChart) {
+                          setContext((prev) => prev + chunkValue);
+                          !respondWithChart ?  newAssistantMessage.text = newAssistantMessage.text + chunkValue : ""
+                      }
+                    
+                      if (done) {
+                          break;
+                      }
+                  }
+                  if (!firstChunkContainsTools)
+                    previous.push({ role: 'assistant', content: chunks })
           }
           else{
             let isJsonresult = isValidJSON(result)
@@ -580,7 +624,8 @@ const ApplicationContent: NextPage = () => {
             }
           }
           // console.log(result)
-          let isJsonresult = isValidJSON(result)
+          let isJsonresult = isValidJSON(result) 
+          let checkChunk = isValidJSON(chunks);
 
           result = respondWithChart?chartPropsCleanup(result):result;
 
@@ -626,17 +671,29 @@ const ApplicationContent: NextPage = () => {
           //   previous.push({ role: 'assistant', content: result.content })
           // }
 
-          if(isJsonresult && JSON.parse(result).tool_calls) {
-            console.log("tool calls : ", JSON.parse(result).tool_calls)
-
+          if((isJsonresult && JSON.parse(result).tool_calls) || (checkChunk && JSON.parse(chunks).tool_calls)) {
+            // console.log("tool calls : ", JSON.parse(result).tool_calls)
+            let tools = isJsonresult && JSON.parse(result).tool_calls ? JSON.parse(result).tool_calls : JSON.parse(chunks).tool_calls
+            if (childRef.current) {
+              childRef.current.textContent = "LLM recommends to use "+tools[0].function.name + " tool to retrieval with argument "+tools[0].function.arguments
+            }
               loopCount++
               if(loopCount >= MAX_LOOP_COUNT) {
                   isCompleted = true
               } else {
-                  result_tools = JSON.parse(result).tool_calls
+
+                  result_tools = isJsonresult && JSON.parse(result).tool_calls ? JSON.parse(result).tool_calls : JSON.parse(chunks).tool_calls
               }
           } else {
               isCompleted = true
+              setChatProgress("Done")
+              if (childRef.current) {
+                childRef.current.textContent = "Done"
+              }
+              // if (childRef.current) {
+              //   childRef.current.textContent = "completed generation"
+              // }
+
           }
       } while(!isCompleted)
       setUserInput("");
@@ -706,6 +763,8 @@ const ApplicationContent: NextPage = () => {
                 </Grid>
                 <Grid item xs={9} sx={{paddingTop: '0px'}}>
                   <Chat
+                    ref={childRef}
+                    chatProgress = {chatProgress}
                     dbSchemaImageUrl={dbSchemaImageUrl}
                     loading={loading}
                     messages={messages}
@@ -726,8 +785,8 @@ const ApplicationContent: NextPage = () => {
                     userInput={userInput}
                     llmKey = {llmKey}
                     isUserDefined = {isUserDefinedAgent}
-                  >
-                  </Chat>
+                  />
+                  {/* </Chat> */}
                 </Grid>
             </Grid>
        </div>

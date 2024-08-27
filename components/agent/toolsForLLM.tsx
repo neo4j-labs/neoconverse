@@ -5,6 +5,7 @@ import { Tool, Property } from '../../lib/type';
 import { cypher } from "@codemirror/legacy-modes/mode/cypher";
 import { StreamLanguage } from "@codemirror/language";
 import CodeMirror from '@uiw/react-codemirror';
+import Tooltip from '@mui/material/Tooltip';
 
 
 interface ToolsProps {
@@ -166,6 +167,7 @@ const ToolForm: React.FC<{ tool: Tool; index: number; onChange: (index: number, 
             <TextField
             label="API endpoint"
             value={tool.categorical_input || ''}
+            onChange={(e) => handleChange('categorical_input', e.target.value)}
             fullWidth
           />
         )}
@@ -231,20 +233,32 @@ const Tools: React.FC<ToolsProps> = ({ toolsData, onToolsChange }) => {
   };
 
   return (
-    <Container>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ paddingLeft: 2 }}>
+      {/* <Typography variant="h4" gutterBottom
+       sx={{ display: 'inline', color: "rgba(0, 0, 0, 0.6)", fontWeight: 600, fontSize: 22, fontFamily: "sans-serif" }}
+      >
         Function Calling Tools
-      </Typography>
+      </Typography> */}
       <Grid container spacing={2}>
         {tools?.map((tool, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
-            <Paper elevation={3} sx={{ padding: 2 }}>
-              <Typography variant="h6">{tool.name}</Typography>
-              <Typography variant="body2">{tool.description}</Typography>
-              <Typography variant="body2">Category: {tool.category}</Typography>
+            <Paper elevation={3} sx={{ padding: 2, minHeight:'150px', maxHeight:'150px'}}>
+              <Typography variant="h6" sx={{ display: 'inline', color: "rgba(0, 0, 0, 0.6)", fontWeight: 400, fontSize: 16, fontFamily: "sans-serif" }}>{tool.name} 
+
+              </Typography>
+              <Tooltip title={tool.description}>
+                <Typography sx = {{   
+                  display: '-webkit-box',
+                  WebkitBoxOrient: 'vertical', 
+                  WebkitLineClamp: 3, lineClamp: 3, 
+                  overflow: 'hidden',textOverflow: 'ellipsis'}} variant="body2">
+                    {tool.description}
+                </Typography>
+              </Tooltip>
+              {/* <Typography variant="body2">Category: {tool.category}</Typography>
               {tool.category === 'Cypher Execution' && (
                 <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>Cypher Query: {tool.cypherQuery}</Typography>
-              )}
+              )} */}
               <Button variant="contained" color="primary" onClick={() => setEditingIndex(index)} startIcon={<EditIcon />} sx={{ marginTop: 2 }}>
                 Edit
               </Button>
@@ -269,7 +283,7 @@ const Tools: React.FC<ToolsProps> = ({ toolsData, onToolsChange }) => {
           onClose={() => setEditingIndex(null)}
         />
       )}
-    </Container>
+    </Box>
   );
 };
 
