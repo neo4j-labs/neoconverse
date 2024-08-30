@@ -96,7 +96,7 @@ const Chat = forwardRef((props, ref) => {
 
     const howCanIHelpYouHeight = () => {
         if (howCanIHelpRef.current) {
-            return howCanIHelpRef.current.clientHeight+80;
+            return howCanIHelpRef.current.clientHeight+0;
         } else {
             return 50;
         }
@@ -275,10 +275,10 @@ const Chat = forwardRef((props, ref) => {
                     </div>
                 ))}
             </List>
-            <TextField ref={ref} fullWidth id="standard-basic" label={progress} variant="standard"
+            {/* <TextField ref={ref} fullWidth id="standard-basic" label={progress} variant="standard"
                 sx={{ fontWeight: 400, fontSize: 15 }}
                 multiline>
-           </TextField>
+           </TextField> */}
             <TextField ref={howCanIHelpRef} fullWidth id="standard-basic" label="How can i help you today ?" variant="standard"
                 sx={{ fontWeight: 400, fontSize: 15 }}
                 multiline

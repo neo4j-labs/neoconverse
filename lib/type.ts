@@ -7,7 +7,8 @@ export interface LLMDetails {
     azureEndpoint?: string;
     azureKey?: string;
     azureDeployment?: string;
-    model?:string
+    azureApiVersion?: string;
+    model?:string;
   };
   
   export interface Property {

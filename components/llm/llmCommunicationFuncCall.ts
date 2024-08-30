@@ -2,8 +2,10 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleGenerativeAIStream, OpenAIStream, AWSBedrockAnthropicMessagesStream, AWSBedrockAnthropicStream, Message, StreamingTextResponse } from 'ai';
-import OpenAI from 'openai';
-import { OpenAIClient, AzureKeyCredential } from '@azure/openai';
+import { OpenAI, AzureOpenAI } from 'openai';
+import { DefaultAzureCredential, getBearerTokenProvider } from "@azure/identity";
+
+// import {  OpenAIClient, AzureKeyCredential } from '@azure/openai';
 import { BedrockRuntimeClient, InvokeModelWithResponseStreamCommand } from '@aws-sdk/client-bedrock-runtime';
 
 // import { experimental_buildAnthropicPrompt, experimental_buildAnthropicMessages } from 'ai/prompts';
@@ -51,26 +53,24 @@ export const talkToLLM = async ({ chatMessages=[], tools=[], provider="", model=
         
         case LLMProvider.AZURE:
 
-          // Create an OpenAI API client
-          const client = new OpenAIClient(
-            llmKeys.AZURE_OPENAI_ENDPOINT,
-            new AzureKeyCredential(llmKeys.AZURE_OPENAI_API_KEY!),);
-            // new AzureKeyCredential("8e3849b2e444482d9fea3f40c38a6ba3"),); 
+          // const credential = new DefaultAzureCredential();
+          // const scope = "https://cognitiveservices.azure.com/.default";
+          // const azureADTokenProvider = getBearerTokenProvider(credential, scope);
+          
+          const options_azure = { apiKey:llmKeys.AZURE_OPENAI_KEY, endpoint:llmKeys.AZURE_OPENAI_ENDPOINT, deployment: llmKeys.AZURE_DEPLOYMENT, apiVersion:llmKeys.AZURE_API_VERSION,...llmFlags }
 
-          // // Create an OpenAI API client (that's edge friendly!)
-          // const openai = new OpenAI({apiKey: llmKeys.OPENAI_API_KEY, ...llmFlags});
+          // Create an OpenAI API client
+          const client = new AzureOpenAI(
+            options_azure); 
 
           let options_Azure = { messages:chatMessages, model, temperature:0, max_tokens:4000, stream: true }
           if(tools) {
             options_Azure.tools = tools
           }
-    
-          // Ask OpenAI for a streaming completion given the prompt
-          // const response = await openai.chat.completions.create(options);
-            // Ask Azure OpenAI for a streaming chat completion given the prompt
-          const response_azure = await client.streamChatCompletions(
-            llmKeys.AZURE_DEPLOYMENT,
-            options_Azure,
+  
+          // Ask Azure OpenAI for a streaming chat completion given the prompt
+          const response_azure = await client.chat.completions.create(
+            options_Azure
           );
   
           // Convert the response into a friendly text-stream

@@ -127,6 +127,7 @@ const ApplicationContent: NextPage = () => {
               azureKey: currentAgent.azureKey,
               azureDeployment: currentAgent.azureDeployment,
               provider: currentAgent.aiService,
+              azureApiVersion: currentAgent.azureApiVersion
             };
         default:
           return {};

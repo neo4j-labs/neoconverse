@@ -9,6 +9,7 @@
   "dependencies": {
     "@auth0/nextjs-auth0": "^2.6.3",
     "@aws-sdk/client-bedrock-runtime": "^3.554.0",
+    "@azure/identity": "^4.4.1",
     "@azure/openai": "^2.0.0-beta.1",
     "@codemirror/language": "^6.6.0",
     "@codemirror/legacy-modes": "^6.3.2",
@@ -46,7 +47,7 @@
     "mui-markdown": "^1.1.13",
     "neo4j-driver": "^5.6.0",
     "next": "^13.3.1",
-    "openai": "^4.29.2",
+    "openai": "^4.56.2",
     "parse-neo4j": "^0.6.11",
     "react": "18.2.0",
     "react-dom": "18.2.0",

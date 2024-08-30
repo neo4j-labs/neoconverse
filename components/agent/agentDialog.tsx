@@ -89,6 +89,7 @@ interface DialogData {
   azureEndpoint:string,
   azureKey:string,
   azureDeployment:string,
+  azureApiVersion:string,
   toolsData: Tool[]
 }
 
@@ -157,6 +158,7 @@ const aiOptions = ['Open AI', 'Google Vertex AI', 'AWS Bedrock', 'Azure OpenAI']
         azureEndpoint:'',
         azureKey:'',
         azureDeployment:'',
+        azureApiVersion:'',
         toolsData: []
       
     }
@@ -256,7 +258,9 @@ const handleConvoConnectionChange = (event: React.ChangeEvent<HTMLInputElement>)
               <Stack direction="row" spacing={2}>
                 <TextField label="Azure OpenAI Endpoint" name="azureEndpoint" value={data.azureEndpoint} onChange={handleChange} fullWidth />
                 <TextField label="Azure Key" name="azureKey" type="password" value={data.azureKey} onChange={handleChange} fullWidth />
-                <TextField label="Deployment name" name="azureDeployment" value={data.azureDeployment} onChange={handleChange} fullWidth />
+                <TextField label="Deployment Name" name="azureDeployment" value={data.azureDeployment} onChange={handleChange} fullWidth />
+                <TextField label="Api Version" name="azureApiVersion" value={data.azureApiVersion} onChange={handleChange} fullWidth />
+
               </Stack>
             </Grid>
           );

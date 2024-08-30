@@ -30,8 +30,8 @@ export async function GenerateContent(
             AWS_SECRET_ACCESS_KEY: llmDetails.awsSecretAccessKey,
             AZURE_OPENAI_ENDPOINT: llmDetails.azureEndpoint,
             AZURE_OPENAI_KEY:llmDetails.azureKey,
-            AZURE_DEPLOYMENT:llmDetails.azureDeployment
-
+            AZURE_DEPLOYMENT:llmDetails.azureDeployment,
+            AZURE_API_VERSION: llmDetails.azureApiVersion
         };
         if (llmDetails.provider === LLMProvider.OPENAI) {
             llmRequestParams.llmFlags = { dangerouslyAllowBrowser: true }
@@ -278,7 +278,8 @@ export async function InvokeLLMForTool(
         AWS_SECRET_ACCESS_KEY: llmKey.awsSecretAccessKey,
         AZURE_OPENAI_ENDPOINT: llmKey.azureEndpoint,
         AZURE_OPENAI_KEY:llmKey.azureKey,
-        AZURE_DEPLOYMENT:llmKey.azureDeployment
+        AZURE_DEPLOYMENT:llmKey.azureDeployment,
+        AZURE_API_VERSION:llmKey.azureApiVersion
     };
 
     if(!isGraphViz)
@@ -346,7 +347,11 @@ export async function InvokeLLMForMessage(payload:{})
         OPENAI_API_KEY: llmDetails.openAIKey,
         GOOGLE_API_KEY: llmDetails.googleAPIKey,
         AWS_ACCESS_KEY_ID: llmDetails.awsAccessKeyId,
-        AWS_SECRET_ACCESS_KEY: llmDetails.awsSecretAccessKey
+        AWS_SECRET_ACCESS_KEY: llmDetails.awsSecretAccessKey,
+        AZURE_OPENAI_ENDPOINT: llmDetails.azureEndpoint,
+        AZURE_OPENAI_KEY:llmDetails.azureKey,
+        AZURE_DEPLOYMENT:llmDetails.azureDeployment,
+        AZURE_API_VERSION:llmDetails.azureApiVersion
     };
 
     let llmResponse = LLMCall({chatMessages:messages, tools:prededinedTools,provider:llmDetails.provider, model:llmDetails.model, llmKeys:llmKeys,llmFlags:{dangerouslyAllowBrowser: true}})
