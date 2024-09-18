@@ -8,6 +8,8 @@ import Image from "next/image";
 
 import SendIcon from '@mui/icons-material/Send';
 import TextField from '@mui/material/TextField';
+import TimelineIcon from '@mui/icons-material/Timeline';
+
 
 import InputAdornment from '@mui/material/InputAdornment';
 
@@ -36,6 +38,9 @@ import CypherEditor from "./cypherEditor"
 import SchemaModal from '../common/SchemaModal';
 import QuestionsModal from '../common/QuestionsModal';
 
+import GraphNVL from '../common/GraphVizNvl'
+import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material';
+
 const ExtraPadding = 10;
 
 const Chat = forwardRef((props, ref) => {
@@ -46,6 +51,7 @@ const Chat = forwardRef((props, ref) => {
         loading,
         messages,
         respondWithChart,
+        respondWithGraph,
         runCypher,
         sampleQuestions,
         scrollToBios,
@@ -53,13 +59,17 @@ const Chat = forwardRef((props, ref) => {
         setLoading,
         setMessages,
         setRespondWithChart,
+        setRespondWithGraph,
         setUserInput,
         setBioRef,
         styleProps,
         StreamResponse,
         userInput,
         isUserDefined,
-        llmKey
+        llmKey,
+        graphElements,
+        outputOption,
+        setOutputOption
     } = props;
 
     styleProps = styleProps || {};
@@ -101,6 +111,11 @@ const Chat = forwardRef((props, ref) => {
             return 50;
         }
     }
+
+    const handleOutputOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setOutputOption((event.target as HTMLInputElement).value);
+      };
+    
 
     const getChatHeight = () => styleProps.HeaderHeight + howCanIHelpYouHeight() + ExtraPadding
 
@@ -250,6 +265,12 @@ const Chat = forwardRef((props, ref) => {
                                 />
                             )
                             }
+                            {i != 0 && !m.isChart && m.graphElements?.nodes && (
+                            <div style={{width:"800px",height:"800px"}}>
+                                 <GraphNVL GraphData={m.graphElements}/>
+                             </div>
+                            )
+                            }
                             {!loading && i === messages.length - 1 && (
                                 <span ref={bioRef}></span>)
                             }
@@ -295,11 +316,11 @@ const Chat = forwardRef((props, ref) => {
                 value={userInput}
                 InputProps={{
                     endAdornment: (
-                        <InputAdornment position="end">
+                        <InputAdornment position="middle" >
                             <Tooltip title={"Sample Questions and Model"}>
                                 <MoreVertIcon style={{ cursor: "pointer" }} onClick={handleMenu} />
                             </Tooltip>
-                            {respondWithChart ?
+                            {/* {respondWithChart ?
                                 <Tooltip title="Respond with Chart">
                                     <DonutSmallIcon sx={{ cursor: "pointer" }} onClick={() => { setRespondWithChart(!respondWithChart) }} />
                                 </Tooltip>
@@ -308,6 +329,24 @@ const Chat = forwardRef((props, ref) => {
                                     <ArticleIcon sx={{ cursor: "pointer" }} onClick={() => { setRespondWithChart(!respondWithChart) }} />
                                 </Tooltip>
                             }
+                            <Tooltip title="Respond with graph">
+                                <TimelineIcon sx={{ cursor: "pointer", paddingLeft: "10px", paddingRight: "10px" }} onClick={() => { setRespondWithGraph(!respondWithGraph) }} />
+                            </Tooltip> */}
+                            <FormControl style={{flexWrap:'nowrap'}}>
+                                {/* <FormLabel id="demo-row-radio-buttons-group-label">Gender</FormLabel> */}
+                                <RadioGroup
+                                    row
+                                    aria-labelledby="demo-row-radio-buttons-group-label"
+                                    name="row-radio-buttons-group"
+                                    style={{flexWrap:'nowrap'}}
+                                    value={outputOption}
+                                    onChange={handleOutputOptionChange}
+                                >
+                                    <FormControlLabel value="Text" control={<Radio />} label="Text" />
+                                    <FormControlLabel value="Chart" control={<Radio />} label="Chart" onClick={() => { setRespondWithChart(!respondWithChart) }} />
+                                    <FormControlLabel value="Graph" control={<Radio />} label="Graph" onClick={() => { setRespondWithGraph(!respondWithGraph) }} />
+                                </RadioGroup>
+                                </FormControl>
                             <Tooltip title="Send Message">
                                 <SendIcon sx={{ cursor: "pointer", paddingLeft: "10px", paddingRight: "10px" }} onClick={(e) => {
                                     StreamResponse(e)

@@ -22,6 +22,8 @@ import { LLMDetails } from '../lib/type';
 import {SAVE_CONVO_CYPHER} from '../lib/cypherQuery'
 import { userInfo } from 'os';
 import { SYSTEM_PROMPT_FUNCTION_CALLING } from '../lib/prompt';
+import { getNodeCaption } from '../utils/utils';
+
 const HeaderHeight = 135;
 
 
@@ -68,6 +70,8 @@ const ApplicationContent: NextPage = () => {
   ]);
   const [chatProgress, setChatProgress]= useState('Invoking LLM ...');
   const childRef = useRef<null | HTMLDivElement>(null);
+  const [respondWithGraph, setRespondWithGraph] = useState(false);
+  const [outputOption, setOutputOption] = useState("Text");
 
   // 
   type ChatGPTAgent = "user" | "system";
@@ -83,6 +87,8 @@ const ApplicationContent: NextPage = () => {
   const [agents, setAgents] = useState([]);
   const [agentsAreLoading, setAgentsAreLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
+
+  const [graphElements, setGraphElements] =  useState({});
 
   const [messages, setMessages] = useState([  
     { conversation_id: Date.now()+"-"+user?.name,
@@ -253,7 +259,7 @@ const ApplicationContent: NextPage = () => {
         name: "ai"
       },
       avatar: currentDomainImage,
-      isChart: respondWithChart,
+      isChart: (outputOption=="Chart")?true:false,
       cypher: "",
       chartData:{}
     })
@@ -267,7 +273,7 @@ const ApplicationContent: NextPage = () => {
 
     track(Events.AskQuestion, { 
       saveConvoOn: (isUserDefined) ? currentAgent.saveConvo : process.env.NEXT_PUBLIC_SAVE_CONVERSATION,
-      isChart: respondWithChart,
+      isChart: (outputOption=="Chart")?true:false,
       isUserDefined: isUserDefined,
       key: (isUserDefined) ? 'UserDefined' : currentAgent?.key,
       // TODO: provider defined below for neo4j agents should come from the agentRegistry
@@ -300,14 +306,14 @@ const ApplicationContent: NextPage = () => {
     // console.log('Prompt for Cypher generation \n' , prompt);
     let provider =  currentAgent?.userDefined ? currentAgent?.aiService : "Open AI";
     
-    let responseText = await GenerateContent(isUserDefined, prompt, true, respondWithChart, llmKey)
+    let responseText = await GenerateContent(isUserDefined, prompt, true, (outputOption=="Chart")?true:false, llmKey)
     // console.log('responseText \n' , responseText);
 
     var query = "";
     if (responseText.toString().toLowerCase().indexOf('limit') !== -1 ) {
       query = responseText.toString();
     } else {
-      query = respondWithChart? responseText.toString().trim().replace(';','') : responseText.toString().trim().replace(';','') + '\nLIMIT 5';
+      query = (outputOption=="Chart")? responseText.toString().trim().replace(';','') : responseText.toString().trim().replace(';','') + '\nLIMIT 5';
     }
 
     userData[userData.length-1].cypher = query;
@@ -318,7 +324,7 @@ const ApplicationContent: NextPage = () => {
         // console.log('Result from Neo4j' , neoResponse.result);
 
         var prompt = ""
-        if(!respondWithChart){
+        if(!(outputOption=="Chart")){
             if(neoResponse?.result?.length ===0)
             {
               prompt = prompts.GRACEFUL_MESSAGE_PROMPT;
@@ -343,9 +349,9 @@ const ApplicationContent: NextPage = () => {
 
         // console.log('Prompt \n' , prompt);
      
-        let finalResponse = await GenerateContent(isUserDefined, prompt, false, respondWithChart, llmKey)
+        let finalResponse = await GenerateContent(isUserDefined, prompt, false, (outputOption=="Chart")?true:false, llmKey)
         let finalMessage = ""
-        if(!respondWithChart)
+        if(!(outputOption=="Chart"))
         {
           const reader = finalResponse?.body?.getReader();
           let result = ""
@@ -354,7 +360,7 @@ const ApplicationContent: NextPage = () => {
               let chunkValue = new TextDecoder().decode(value);
               result+=chunkValue;
               setContext((prev) => prev + chunkValue);
-              !respondWithChart ?  userData[userData.length-1].text = userData[userData.length-1].text + chunkValue : ""
+              !(outputOption=="Chart") ?  userData[userData.length-1].text = userData[userData.length-1].text + chunkValue : ""
               finalMessage+=chunkValue;
               if (done) {
                   break;
@@ -370,11 +376,11 @@ const ApplicationContent: NextPage = () => {
         setLoading(false);
         console.log("Final response text from LLM", finalMessage);
 
-        if (respondWithChart && neoResponse.result.length !=0){
+        if ((outputOption=="Chart") && neoResponse.result.length !=0){
           finalMessage = JSON.stringify(eval("(" + finalMessage + ")"));
           userData[userData.length-1].chartData = JSON.parse(finalMessage);
         }
-        else if (respondWithChart && neoResponse.result.length ==0){
+        else if ((outputOption=="Chart") && neoResponse.result.length ==0){
           userData[userData.length-1].chartData = "";
           userData[userData.length-1].text = prompts.GRACEFUL_CHART_FAILURE_PROMPT;
         }
@@ -397,7 +403,7 @@ const ApplicationContent: NextPage = () => {
             let chunkValue = new TextDecoder().decode(value);
             result+=chunkValue;
             setContext((prev) => prev + chunkValue);
-            !respondWithChart ?  userData[userData.length-1].text = userData[userData.length-1].text + chunkValue : ""
+            !(outputOption=="Chart") ?  userData[userData.length-1].text = userData[userData.length-1].text + chunkValue : ""
             if (done) {
                 break;
             }
@@ -482,7 +488,7 @@ const ApplicationContent: NextPage = () => {
         name: "User"
       },
       avatar: "/userProfile.jpeg",
-      isChart: respondWithChart,
+      isChart: (outputOption=="Chart")?true:false,
       cypher: "",
       chartData:{},
       // graphElements: {},
@@ -498,7 +504,7 @@ const ApplicationContent: NextPage = () => {
 
     track(Events.AskQuestion, { 
       saveConvoOn: (isUserDefined) ? currentAgent.saveConvo : process.env.NEXT_PUBLIC_SAVE_CONVERSATION,
-      isChart: respondWithChart,
+      isChart: (outputOption=="Chart")?true:false,
       isUserDefined: isUserDefined,
       key: (isUserDefined) ? 'UserDefined' : currentAgent?.key,
       // TODO: provider defined below for neo4j agents should come from the agentRegistry
@@ -536,8 +542,13 @@ const ApplicationContent: NextPage = () => {
           //   childRef.current.textContent = "Calling LLM";
           // }
           // previous = previous.concat(messagesTmp);
-          const functionToCall = result_tools.length > 0 ? InvokeLLMForTool : InvokeLLMForMessage
-          const payload = result_tools.length > 0 ? {agent: currentAgent?.title, schema:schema, availableTools:availableTools, tools: result_tools, previous, userInput, llmKey, isGraphViz:false } : { schema:schema, availableTools:availableTools, userInput: userInput, previous, llmKey, isGraphViz:true  }
+          let userInputProcessed = outputOption == "Graph"?userInput+ ",graph visualize the output":userInput;
+          userInputProcessed = outputOption == "Chart"?userInputProcessed+ ",chart visualize the output":userInputProcessed;
+
+          const functionToCall = result_tools.length > 0 ? InvokeLLMForTool : InvokeLLMForMessage;
+          const isGraphViz = outputOption == "Graph"?true:false;
+          const isChartViz = outputOption == "Chart"?true:false;
+          const payload = result_tools.length > 0 ? {agent: currentAgent?.title, schema:schema, availableTools:availableTools, tools: result_tools, previous, userInput:userInputProcessed, llmKey, isGraphViz:isGraphViz, isChartViz:isChartViz } : { schema:schema, availableTools:availableTools, userInput: userInputProcessed, previous, llmKey, isGraphViz:isGraphViz, isChartViz:isChartViz  }
           
           let [result, messages] = await functionToCall((payload));
           if(functionToCall.name == 'InvokeLLMForTool')
@@ -563,7 +574,7 @@ const ApplicationContent: NextPage = () => {
                       name: "assistant"
                     },
                     avatar: currentDomainImage,
-                    isChart: respondWithChart,
+                    isChart: (outputOption=="Chart")?true:false,
                     cypher: "",
                     chartData: {},
                     graphElements: {},
@@ -588,9 +599,9 @@ const ApplicationContent: NextPage = () => {
                           }
                       }
                           // Only execute if the first chunk does not contain "tools"
-                      if (!firstChunkContainsTools && !respondWithChart) {
+                      if (!firstChunkContainsTools && !(outputOption=="Chart")) {
                           setContext((prev) => prev + chunkValue);
-                          !respondWithChart ?  newAssistantMessage.text = newAssistantMessage.text + chunkValue : ""
+                          !(outputOption=="Chart") ?  newAssistantMessage.text = newAssistantMessage.text + chunkValue : ""
                       }
                     
                       if (done) {
@@ -602,7 +613,7 @@ const ApplicationContent: NextPage = () => {
           }
           else{
             let isJsonresult = isValidJSON(result)
-            result = respondWithChart?chartPropsCleanup(result):result;
+            result = outputOption=="Chart"?chartPropsCleanup(result):result;
             if( !isJsonresult) {
                 console.log("result : ", result)
                 const newAssistantMessage1 = {
@@ -614,21 +625,86 @@ const ApplicationContent: NextPage = () => {
                   name: "assistant"
                 },
                 avatar: currentDomainImage,
-                isChart: respondWithChart,
+                isChart: outputOption=="Chart"?true:false,
                 cypher: "",
-                chartData:respondWithChart?JSON.parse(result):{},
+                chartData:outputOption=="Chart"?JSON.parse(result):{},
                 graphElements: {},
                 role:"assistant"
               }
               setMessages((prev) => [...prev, ...[newAssistantMessage1]])
               previous.push({ role: 'assistant', content: result.content })
             }
+            if(isJsonresult && JSON.parse(result).result)
+            {
+              let graphEntities = JSON.parse(result).result;
+              
+              let nodes = graphEntities.map((f) => f.nodes);
+              let rels = graphEntities.map((f) => f.rels);
+  
+              const formatedNodes: [] = nodes[0].map((g:any) => ({
+                id: g.elementId,
+                // size: 40,
+                // captionAlign: 'bottom',
+                // iconAlign: 'bottom',
+                // captionHtml: <b>Test</b>,
+                label: `${g.labels}`,
+                caption:`${getNodeCaption(g)}`
+              }));
+  
+              const formatedRels: [] = rels[0].map((r: any) => ({
+                    id: r.elementId,
+                    from: r.startNodeElementId,
+                    to: r.endNodeElementId,
+                    caption: r.type
+        
+              }));
+  
+            //   const formatedNodes1: [] = nodes[0].map((g:any) => ({
+            //     id: g.elementId,
+            //     name:g.properties.name?g.properties.name:g.properties.title,
+            //     label:g.labels[0]
+            //   }));
+            //   const formatedRels1: [] = rels[0].map((r: any) => ({
+            //     source: r.startNodeElementId,
+            //     target: r.endNodeElementId,  
+            //     type: r.type
+            // }));
+  
+              let nvlGraphObj = {
+                nodes:formatedNodes,
+                links:formatedRels
+              }
+              // let obj = {
+              //   nodes:formatedNodes1,
+              //   links:formatedRels1
+              // }
+              setGraphElements(nvlGraphObj)
+              
+              const newAssistantMessage = {
+                conversation_id : Date.now()+"-"+user?.name,
+                text: "",
+                date: new Date(),
+                agent: selectedAgentKey,
+                author: {
+                  name: "assistant"
+                },
+                avatar: currentDomainImage,
+                isChart: outputOption=="Chart"?true:false,
+                cypher: "",
+                chartData:{},
+                graphElements: nvlGraphObj,
+                role:"assistant"
+              }
+              setMessages((prev) => [...prev, ...[newAssistantMessage]])
+              previous.push({ role: 'assistant', content: result.content })
+            }
           }
           // console.log(result)
           let isJsonresult = isValidJSON(result) 
           let checkChunk = isValidJSON(chunks);
+          // let tools_result = chunks != '' && JSON.parse(chunks) ? chunks : JSON.parse(result)
 
-          result = respondWithChart?chartPropsCleanup(result):result;
+          result = outputOption=="Chart" && !((isJsonresult && JSON.parse(result).tool_calls) || (checkChunk && JSON.parse(chunks).tool_calls))?chartPropsCleanup(chunks):result;
 
           // if( !isJsonresult) {
           //       console.log("result : ", result)
@@ -777,7 +853,10 @@ const ApplicationContent: NextPage = () => {
                     setLoading={setLoading}
                     setMessages={setMessages}
                     setRespondWithChart={setRespondWithChart}
+                    setRespondWithGraph={setRespondWithGraph}
                     setUserInput={setUserInput}
+                    outputOption = {outputOption}
+                    setOutputOption = {setOutputOption}
                     setBioRef={setBioRef}
                     styleProps={{
                       HeaderHeight
@@ -786,6 +865,7 @@ const ApplicationContent: NextPage = () => {
                     userInput={userInput}
                     llmKey = {llmKey}
                     isUserDefined = {isUserDefinedAgent}
+                    graphElements = {graphElements}
                   />
                   {/* </Chat> */}
                 </Grid>

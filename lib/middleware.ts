@@ -200,7 +200,7 @@ export async function InvokeLLMForTool(
     payload:{}
 )
 {
-    const { agent, schema, availableTools, previous, tools, userInput, llmKey, isGraphViz } = payload;
+    const { agent, schema, availableTools, previous, tools, userInput, llmKey, isGraphViz, isChartViz} = payload;
     if (!Array.isArray(tools)) {
         return new Response('Prompt is not in correct format', {
             status: 400,
@@ -219,6 +219,7 @@ export async function InvokeLLMForTool(
     let inBuiltTools = 
     [
         { type: 'function', function: getCypher },
+        { type: 'function', function: getChartProps}
     ]
 
     prededinedTools = prededinedTools.concat(inBuiltTools);
@@ -332,6 +333,8 @@ export async function InvokeLLMForMessage(payload:{})
       let inBuiltTools = 
       [
           { type: 'function', function: getCypher },
+          { type: 'function', function: getVisualization},
+          { type: 'function', function: getChartProps}
       ]
 
       prededinedTools = prededinedTools.concat(inBuiltTools);

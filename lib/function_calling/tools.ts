@@ -56,7 +56,7 @@ export const getCypher = {
 
 export const getChartProps = {
     "name": "get_chart_props",
-    "description": "This tools allows you to execute the function that is relavant to user inquiry and provides you the result back in json format, you would then use that result to generate apache echart chart props ",
+    "description": "This tool generates chart props for apache echarts, and takes the json data as inputs and provides appropiate chart properties back that can be rendered via apache react echarts dynamically, This tool strictly only returns chart props in json format without any additional instructions  ",
     "parameters": {
       "type": "object",
       "properties": {
