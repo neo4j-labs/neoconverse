@@ -146,6 +146,21 @@ export function SYSTEM_PROMPT_FUNCTION_CALLING(schema:string)
     //     </FewShotExamples>`
     //     : '';
 
+    const chartOptionFormat = `{
+        "xAxis": {
+          "type": "category",
+          "data": ["Corrective", "Inspection", "Periodic Maintenance"]
+        },
+        "yAxis": {
+          "type": "value"
+        },
+        "series": [
+          {
+            "data": [7, 8, 3],
+            "type": "bar"
+          }
+        ]
+      }`
     const schemaFormatted = JSON.stringify(schema);
     const template = 
 
@@ -174,8 +189,11 @@ ${schemaFormatted}
         CALL { WITH paths UNWIND paths AS path UNWIND relationships(path) as rel RETURN collect(distinct rel) as rels }
         RETURN nodes, rels
     \n`+
-
-`Strictly do not directly respond with cypher query, if you are generating cypher query then always use get_cypher tool, that executes cypher and get the actual result for user inquiry  \n`+
+`- get_chart_props, use this tool as an additional step when the user inquiry ask for charts and strictly follow below instructions  \n` + 
+    `- You would use the result from previous step to provide chart options for apache echart that can be used to create dynamic chart element using React.createElement to chart the dataset from previous tool \n`+ 
+    `- Strict Response Format: Your responses must be in the form of chart props only. Any explanation, context, or additional information that is not a part of the chart props syntax should be omitted entirely.\n` +
+    `Strictly do not directly respond with cypher query, if you are generating cypher query then always use get_cypher tool, that executes cypher and get the actual result for user inquiry  \n`+
+`when chart visualization is requested strictly use the following response format ${chartOptionFormat}, in this sample bar chart is just one option, feel free to respond with different chart types based on the dataset,  \n`+
 `When you fill up some of the required information yourself, be sure to confirm to user before proceeding.\n` +
 `While returning appropiate tools for execution, strictly do not include another other explaination.\n` +
 `Aside from the listed functions above, answer all other inquiries by telling the user that it is out of scope of your ability.\n\n` +

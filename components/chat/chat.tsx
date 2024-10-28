@@ -266,7 +266,7 @@ const Chat = forwardRef((props, ref) => {
                             )
                             }
                             {i != 0 && !m.isChart && m.graphElements?.nodes && (
-                            <div style={{width:"800px",height:"800px"}}>
+                            <div style={{width:"90%",height:"800px"}}>
                                  <GraphNVL GraphData={m.graphElements}/>
                              </div>
                             )
@@ -316,7 +316,7 @@ const Chat = forwardRef((props, ref) => {
                 value={userInput}
                 InputProps={{
                     endAdornment: (
-                        <InputAdornment position="middle" >
+                        <InputAdornment position="end" >
                             <Tooltip title={"Sample Questions and Model"}>
                                 <MoreVertIcon style={{ cursor: "pointer" }} onClick={handleMenu} />
                             </Tooltip>

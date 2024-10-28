@@ -20,6 +20,7 @@ export interface LLMDetails {
   export interface Tool {
     name: string;
     description: string;
+    tagName:string[];
     parameters: {
       type: string;
       properties: {

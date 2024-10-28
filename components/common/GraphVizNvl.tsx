@@ -105,11 +105,11 @@ const GraphNVL: NextPage = ({GraphData}) => {
         newNodes.push({
             id: node.id,
             size: 25,
-            captionAlign: 'bottom',
+            captionAlign: 'center',
             iconAlign: 'middle',
             html:`<div> test</div>`,
             // caption: node.caption,
-            icon:`realtorchat.png`,
+            // icon:`realtorchat.png`,
             captions: [{ value: node.caption ? `${node.caption}` : `${node.caption}`, styles: ["light"] }],
             color: schemeVal[node.label],
           });

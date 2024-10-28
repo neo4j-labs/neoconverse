@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Container, Typography, Box, Paper, IconButton, Grid, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { TextField, Button, Container, Typography, Box, Paper, IconButton, Grid, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, Chip, OutlinedInput, Stack } from '@mui/material';
 import { Add as AddIcon, Remove as RemoveIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Tool, Property } from '../../lib/type';
 import { cypher } from "@codemirror/legacy-modes/mode/cypher";
 import { StreamLanguage } from "@codemirror/language";
 import CodeMirror from '@uiw/react-codemirror';
 import Tooltip from '@mui/material/Tooltip';
+import  { SelectChangeEvent } from '@mui/material/Select';
+import { Theme, useTheme } from '@mui/material/styles';
 
 
 interface ToolsProps {
@@ -54,10 +56,57 @@ const ToolForm: React.FC<{ tool: Tool; index: number; onChange: (index: number, 
     onChange(index, updatedTool);
   };
 
+  const ITEM_HEIGHT = 48;
+  const ITEM_PADDING_TOP = 8;
+  const theme = useTheme();
+
+  const MenuProps = {
+    PaperProps: {
+      style: {
+        maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+        width: 250,
+      },
+    },
+  };
+
+  const names = [
+    'Full text Search',
+    'Property Search',
+    'GDS Insights',
+    'Vector Search',
+    'Graph Traversal',
+    'External API',
+    'Pinecone Search'
+  ];
+
+  function getStyles(name: string, tagName: readonly string[], theme: Theme) {
+    return {
+      fontWeight: tagName.includes(name)
+        ? theme.typography.fontWeightMedium
+        : theme.typography.fontWeightRegular,
+    };
+  }
+  const [tagName, setTagName] = React.useState<string[]>([]);
+
+  const handleChangeTag = (event: SelectChangeEvent<typeof tagName>) => {
+    const {
+      target: { value },
+    } = event;
+
+    setTagName(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
+    );
+    const updatedTool = { ...tool, tagName: typeof value === 'string' ? value.split(',') : value};
+    onChange(index, updatedTool);
+  };
+
+
   return (
     <Dialog open={true} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Edit Tool</DialogTitle>
       <DialogContent>
+      <Box key="propName" sx={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 2 }}>
         <TextField
           label="Name"
           value={tool.name}
@@ -65,6 +114,38 @@ const ToolForm: React.FC<{ tool: Tool; index: number; onChange: (index: number, 
           fullWidth
           margin="normal"
         />
+        <div>
+          <FormControl sx={{ m: 1, width: 300 }}>
+            <InputLabel id="demo-multiple-chip-label">Tags</InputLabel>
+            <Select
+              labelId="demo-multiple-chip-label"
+              id="demo-multiple-chip"
+              multiple
+              value={tool.tagName?tool.tagName:[]}
+              onChange={handleChangeTag}
+              input={<OutlinedInput id="select-multiple-chip" label="tags" />}
+              renderValue={(selected) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {selected.map((value) => (
+                    <Chip key={value} label={value} />
+                  ))}
+                </Box>
+              )}
+              MenuProps={MenuProps}
+            >
+              {names.map((name) => (
+                <MenuItem
+                  key={name}
+                  value={name}
+                  style={getStyles(name, tagName, theme)}
+                >
+                  {name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
+        </Box>
         <TextField
           label="Description"
           value={tool.description}
@@ -243,9 +324,15 @@ const Tools: React.FC<ToolsProps> = ({ toolsData, onToolsChange }) => {
         {tools?.map((tool, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
             <Paper elevation={3} sx={{ padding: 2, minHeight:'150px', maxHeight:'150px'}}>
-              <Typography variant="h6" sx={{ display: 'inline', color: "rgba(0, 0, 0, 0.6)", fontWeight: 400, fontSize: 16, fontFamily: "sans-serif" }}>{tool.name} 
+              <Box>
+              <Stack direction="row" spacing={1}>
 
-              </Typography>
+                <Typography variant="h6" sx={{ display: 'inline', color: "rgba(0, 0, 0, 0.6)", fontWeight: 400, fontSize: 16, fontFamily: "sans-serif" }}>{tool.name} 
+                </Typography>
+                  <Chip label={tool.tagName} color="success"/>
+                </Stack>
+
+              </Box>
               <Tooltip title={tool.description}>
                 <Typography sx = {{   
                   display: '-webkit-box',
@@ -288,3 +375,4 @@ const Tools: React.FC<ToolsProps> = ({ toolsData, onToolsChange }) => {
 };
 
 export default Tools;
+

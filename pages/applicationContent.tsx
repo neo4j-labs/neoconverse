@@ -456,7 +456,8 @@ const ApplicationContent: NextPage = () => {
   function chartPropsCleanup(generatedChartProps:string){
 
     let chartConfStr = generatedChartProps.replaceAll('```','').replace("json",'').replace("jsx",'').replace("const option =",'')
-    chartConfStr =chartConfStr.toString().trim().startsWith("{")? chartConfStr.toString().trim().replace(';',''): "{"+chartConfStr.toString().trim().replace(';','') ;
+    const jsonPart = chartConfStr.match(/{[\s\S]*}/)[0];
+    chartConfStr =jsonPart.toString().trim().startsWith("{")? jsonPart.toString().trim().replace(';',''): "{"+jsonPart.toString().trim().replace(';','') ;
 
     // Add any additional cypher generation logic here
     return chartConfStr;
@@ -488,7 +489,7 @@ const ApplicationContent: NextPage = () => {
         name: "User"
       },
       avatar: "/userProfile.jpeg",
-      isChart: (outputOption=="Chart")?true:false,
+      // isChart: (outputOption=="Chart")?true:false,
       cypher: "",
       chartData:{},
       // graphElements: {},
@@ -528,8 +529,8 @@ const ApplicationContent: NextPage = () => {
         }
     })
 
-    let availableTools =currentAgent?.toolsData;
-    let schema = currentAgent?.schema;
+    let availableTools =currentAgent?.toolsData
+    let schema = (isUserDefined)? currentAgent.schema:currentAgent.promptParts.dataModel
     let result_tools = []
     let isCompleted = false
     let MAX_LOOP_COUNT = 10 // Don't want to let it run loose
@@ -601,7 +602,9 @@ const ApplicationContent: NextPage = () => {
                           // Only execute if the first chunk does not contain "tools"
                       if (!firstChunkContainsTools && !(outputOption=="Chart")) {
                           setContext((prev) => prev + chunkValue);
-                          !(outputOption=="Chart") ?  newAssistantMessage.text = newAssistantMessage.text + chunkValue : ""
+                          !(outputOption=="Chart") ?  newAssistantMessage.text = newAssistantMessage.text + chunkValue : "";
+                          (outputOption=="Chart") ?  newAssistantMessage.chartData = newAssistantMessage.chartData + chunkValue : "";
+
                       }
                     
                       if (done) {
@@ -609,7 +612,11 @@ const ApplicationContent: NextPage = () => {
                       }
                   }
                   if (!firstChunkContainsTools)
-                    previous.push({ role: 'assistant', content: chunks })
+                  {
+                    previous.push({ role: 'assistant', content: chunks });
+                    (outputOption=="Chart") ?  newAssistantMessage.chartData = JSON.parse(chartPropsCleanup(chunks)) : "";
+                  }
+
           }
           else{
             let isJsonresult = isValidJSON(result)
@@ -627,7 +634,7 @@ const ApplicationContent: NextPage = () => {
                 avatar: currentDomainImage,
                 isChart: outputOption=="Chart"?true:false,
                 cypher: "",
-                chartData:outputOption=="Chart"?JSON.parse(result):{},
+                chartData:outputOption=="Chart"?JSON.parse(chartPropsCleanup(result)):{},
                 graphElements: {},
                 role:"assistant"
               }

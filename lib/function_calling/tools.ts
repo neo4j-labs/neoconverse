@@ -54,9 +54,27 @@ export const getCypher = {
     }
 }
 
+const chartOptionFormat = `{
+  "xAxis": {
+    "type": "category",
+    "data": ["Corrective", "Inspection", "Periodic Maintenance"]
+  },
+  "yAxis": {
+    "type": "value"
+  },
+  "series": [
+    {
+      "data": [7, 8, 3],
+      "type": "bar"
+    }
+  ]
+}`
+
 export const getChartProps = {
     "name": "get_chart_props",
-    "description": "This tool generates chart props for apache echarts, and takes the json data as inputs and provides appropiate chart properties back that can be rendered via apache react echarts dynamically, This tool strictly only returns chart props in json format without any additional instructions  ",
+    "description": "This tool generates chart props for apache echarts, and takes the json data as inputs and provides appropiate chart options properties back in a strictly json format"+
+    "that can be rendered via apache react echarts dynamically, This tool lets the LLM returns chart props in json format without any additional instructions and formating" +
+    " A sample response would like below, and strictly must adhere to this response format"+chartOptionFormat,
     "parameters": {
       "type": "object",
       "properties": {
