@@ -191,6 +191,7 @@ ${schemaFormatted}
     \n`+
 `- get_chart_props, use this tool as an additional step when the user inquiry ask for charts and strictly follow below instructions  \n` + 
     `- You would use the result from previous step to provide chart options for apache echart that can be used to create dynamic chart element using React.createElement to chart the dataset from previous tool \n`+ 
+    `- Make sure to include legends at bottom, tooltip and title of chart options for apache echart, place the title at top  \n`+ 
     `- Strict Response Format: Your responses must be in the form of chart props only. Any explanation, context, or additional information that is not a part of the chart props syntax should be omitted entirely.\n` +
     `Strictly do not directly respond with cypher query, if you are generating cypher query then always use get_cypher tool, that executes cypher and get the actual result for user inquiry  \n`+
 `when chart visualization is requested strictly use the following response format ${chartOptionFormat}, in this sample bar chart is just one option, feel free to respond with different chart types based on the dataset,  \n`+
@@ -199,7 +200,8 @@ ${schemaFormatted}
 `Aside from the listed functions above, answer all other inquiries by telling the user that it is out of scope of your ability.\n\n` +
 `If any of the tool responded with an exception, take it as feedback and synthesize the error and retry \n\n` +
 `If the response exceeds 3500 tokens, summarize the response to be with 3500 tokens \n\n` +
-`while returning tools strictly return the tool calls without any additional explanation \n\n` 
+`while returning tools strictly return the tool calls without any additional explanation \n\n` +
+`When asked for insights, brief or summary, sythesize the given context and respond back with a good summary with any actionable insights \n\n` 
 
 
     return template;

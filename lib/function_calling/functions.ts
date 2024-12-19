@@ -139,6 +139,37 @@ async function APICallTool(agent:string, tool: any[], args: Record<string, any> 
       }
 }
 
+async function webSearch(query, apiKey, searchEngineId, numResults = 5) {
+    const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(query)}&key=${apiKey}&cx=${searchEngineId}&num=${numResults}`;
+  
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Google Search API error: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return data.items || [];
+    } catch (error) {
+      console.error("Error performing Google search:", error.message);
+      return [];
+    }
+  }
+  
+  // Example usage
+  const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
+  const SEARCH_ENGINE_ID = process.env.NEXT_PUBLIC_GOOGLE_SEARCH_ENGINE_ID;
+  
+  async function WebSearchTool(agent:string, tool: any[], args: Record<string, any> = {}) {
+    const query = "latest advancements in quantum computing";
+    const results = await webSearch(query, API_KEY, SEARCH_ENGINE_ID);
+  
+    results.forEach((item) => {
+      console.log(`Title: ${item.title}`);
+      console.log(`Snippet: ${item.snippet}`);
+      console.log(`Link: ${item.link}\n`);
+    });
+  };
+
 export async function invokeFunctions(agent, tool, function_name="", function_args={} ) {
     
     console.log("tool.categorical_value", tool)
@@ -148,6 +179,8 @@ export async function invokeFunctions(agent, tool, function_name="", function_ar
             return await CypherExecutionTool(agent, tool, function_args)
         case 'API Call':
             return await APICallTool(agent, tool, function_args)
+        case 'Google Web Search':
+            return await WebSearchTool(agent, tool, function_args)
 
     }
     switch(function_name) {

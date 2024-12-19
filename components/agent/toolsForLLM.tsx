@@ -233,6 +233,7 @@ const ToolForm: React.FC<{ tool: Tool; index: number; onChange: (index: number, 
           >
             <MenuItem value="Cypher Execution">Cypher Execution</MenuItem>
             <MenuItem value="API Call">API Call</MenuItem>
+            <MenuItem value="Google Web Search">Web Search</MenuItem>
           </Select>
         </FormControl>
         {tool.category === 'Cypher Execution' && (
@@ -247,6 +248,14 @@ const ToolForm: React.FC<{ tool: Tool; index: number; onChange: (index: number, 
         {tool.category === 'API Call' && (
             <TextField
             label="API endpoint"
+            value={tool.categorical_input || ''}
+            onChange={(e) => handleChange('categorical_input', e.target.value)}
+            fullWidth
+          />
+        )}
+        {tool.category === 'Google Web Search' && (
+            <TextField
+            label="Google Customer Search endpoint"
             value={tool.categorical_input || ''}
             onChange={(e) => handleChange('categorical_input', e.target.value)}
             fullWidth
