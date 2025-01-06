@@ -11,18 +11,19 @@ module.exports = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
-  async redirects() {
-    return [
-      {
-        source: "/github",
-        destination: "https://github.com/kumarss20/neoconverse",
-        permanent: false,
-      },
-      {
-        source: "/deploy",
-        destination: "https://vercel.com/templates/next.js/neoconverse",
-        permanent: false,
-      },
-    ];
-  },
+  output: "standalone",
+  // async redirects() {
+  //   return [
+  //     {
+  //       source: "/github",
+  //       destination: "https://github.com/kumarss20/neoconverse",
+  //       permanent: false,
+  //     },
+  //     {
+  //       source: "/deploy",
+  //       destination: "https://vercel.com/templates/next.js/neoconverse",
+  //       permanent: false,
+  //     },
+  //   ];
+  // },
 };
