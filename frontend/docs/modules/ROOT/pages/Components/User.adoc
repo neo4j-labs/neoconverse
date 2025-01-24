@@ -1,0 +1,41 @@
+= User Component
+
+image::Components/UserComponent.png[UserComponent,width=300,height=300]
+
+
+The User component provides a user interface for displaying user information and a dropdown menu for user actions such as 'Profile' and 'Logout'.
+
+https://github.com/neo4j-labs/neo4j-needle-starterkit/blob/2.0/src/templates/shared/components/User.tsx[Link to the component code,window=_blank]
+
+== Pre-requisite
+
+- Ensure you have the `@neo4j-ndl` library installed in your project to use this `User` component.
+
+== Usage
+
+To use the User component in your application, you can directly import and place it within your component tree:
+
+[source,jsx]
+----
+import User from './path/to/User';
+
+// In your component's render method or functional component return statement
+<User />
+----
+
+== Component Props
+
+The User component does not accept any props. 
+
+== Key components
+
+=== State Management
+
+- `anchorEl`: Used to manage the anchor element for the dropdown menu. It determines the position of the dropdown.
+- `open`: A derived state from `anchorEl` to control the visibility of the dropdown menu.
+
+=== Event Handling
+
+- `handleClick`: Sets the `anchorEl` state to the current event target, effectively opening the dropdown menu.
+- `handleClose`: Resets the `anchorEl` state to `null`, closing the dropdown menu.
+- `menuSelect`: Handles the selection of a menu item. It currently displays an alert with the selected item's name and closes the menu.

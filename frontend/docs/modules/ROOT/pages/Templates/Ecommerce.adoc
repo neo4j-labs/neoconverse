@@ -1,0 +1,142 @@
+= E-commerce
+
+image::Templates/FeaturedEcommerce.png[E-commerce,align="center"]
+
+== Introduction
+
+The E-commerce platform showcases a dynamic and interactive way to display products, their details, and similar or frequently bought together items. This template aim at introducing and explaining how the recommendation engine use case can be leveraged for the retail industry.
+
+https://needle-starterkit.graphapp.io/ecommerce-preview[Link to the live preview,window=_blank]
+
+https://github.com/neo4j-labs/neo4j-needle-starterkit/blob/2.0/src/templates/ecommerce[Link to the template code,window=_blank]
+
+== Documentation
+
+=== Layout Architecture
+
+The template's core is split into two main components: `Home.tsx` and `Content.tsx`. The `Home` component serves as the entry point, rendering the header and the content area, which includes detailed product information, similar products, and bundle deals.
+
+The layout is designed to be both intuitive and visually appealing, ensuring users can easily navigate through product offerings and access detailed descriptions seamlessly.
+
+=== Code Snippets
+
+.Here is a snippet showcasing the use of `@tanstack/react-table` for product specifications:
+
+[source,tsx]
+----
+const columns = [
+  columnHelper.accessor('CPU', {
+    cell: (info) => info.getValue(),
+    footer: (info) => info.column.id,
+  }),
+  // Additional columns...
+];
+
+const table = useReactTable({
+  data,
+  columns,
+  enableSorting: true,
+  getSortedRowModel: getSortedRowModel(),
+  getCoreRowModel: getCoreRowModel(),
+});
+----
+
+.This snippet demonstrates rendering of the featured product:
+
+[source,tsx]
+----
+<div className='flex flex-row items-start p-4 m-2'>
+  <img src={productImg1} alt='Product 1' className='w-[40%] rounded-md' />
+  <div className='px-5 flex flex-col'>
+    <Typography variant='body-medium'>{products[0].desc1}</Typography>
+    <div className='n-w-full n-bg-light-neutral-text-weakest md:inline-block hidden'>
+      <DataGrid
+        // DataGrid properties...
+      />
+    </div>
+    <div className='md:flex flex-row gap-2.5 hidden'>
+      <Tag>DealOfTheWeek</Tag>
+      // Additional tags...
+    </div>
+  </div>
+</div>
+----
+
+.This snippet demonstrates rendering of the similar products:
+
+[source,tsx]
+----
+<div>
+  <Typography variant='h2'>Similar products</Typography>
+  <div className='flex flex-col md:flex-row gap-2.5 py-2.5'>
+    {[productImg2, productImg3, productImg4].map((img, index) => (
+      <Widget header={products[index + 1].name} isElevated={true} key={index} className='mx-auto max-w-[80%]'>
+        <div className='flex flex-col gap-2.5 md:flex-row'>
+          <img src={img} alt={`Product ${index + 2}`} className='max-w-[40%] self-center' />
+          <div className='p-2.5 flex flex-col gap-2.5'>
+            <div>{products[index + 1].desc1}</div>
+            <Typography variant='body-large'>Price: £{products[index + 1].price}</Typography>
+            <Button>Add to cart</Button>
+          </div>
+        </div>
+      </Widget>
+    ))}
+  </div>
+</div>
+----
+
+.This snippet demonstrates rendering of the frequently bought together product:
+
+[source,tsx]
+----
+<div>
+  <Typography variant='h2'>Frequently bought together</Typography>
+  <div className='flex flex-col items-start md:flex-row gap-2.5 py-2.5'>
+    {[productImg5, productImg6].map((img, index) => (
+      <Widget className='md:max-w-[30%]' header='' isElevated={true} key={index}>
+        <div className='flex flex-row gap-2.5 md:flex-row'>
+          <img src={productImg1} alt='Product 1' className='max-w-[40%]' />
+          <Typography variant='h6' className='self-center'>
+            <PlusCircleIconOutline className='n-w-6 n-h-6' />
+          </Typography>
+          <img src={img} alt={`Product ${index + 2}`} className='max-w-[40%]' />
+        </div>
+        <Typography variant='h4' style={{ textAlignLast: 'center' }}>
+          Package deal
+        </Typography>
+        <Typography variant='body-medium'>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat, quasi? Pariatur ipsam voluptatum,
+          quas labore amet dolor dolore, aspernatur tempora quasi ullam ad, autem distinctio doloribus! Iusto
+          rem iste accusamus.
+        </Typography>
+      </Widget>
+    ))}
+  </div>
+</div>
+----
+
+=== Dataset/Product Catalog
+
+The application initially uses a static JSON dataset named `products.json` for the product catalog. This dataset contains an array of product objects, each with detailed information such as name, price, description, and specifications.
+
+The template supports easy integration with dynamic data sources. Although this is a static template, you can further extend it for real-time inventory updates, user reviews, personalized recommendations, and much more.
+
+.Data Representation:
+
+[source,json]
+----
+{
+  "listProducts": [
+    {
+      "id": 1,
+      "name": "Product 1",
+      "price": 999.99,
+      "desc1": "Lorem ipsum dolor sit amet...",
+      // Additional product details...
+    },
+    // Additional products...
+  ]
+}
+----
+
+This template provides a foundation for developing a comprehensive recommendation engine in the retail industry.

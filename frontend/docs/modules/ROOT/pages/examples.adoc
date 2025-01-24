@@ -1,0 +1,88 @@
+# Examples
+
+## Getting started
+As an example to get you started, here are the steps to retrieve and display data from a Neo4j database for the Movie graph.
+
+### Retrieve data
+First, to retrieve data, we can create a function that will return the data we need in the `src/utils/Driver.tsx` file. 
+In this example, we will focus on getting all the actors for the movie `The Matrix`.
+
+.Driver.tsx
+[source, typescript]
+----
+export async function getMatrixActors() {
+  const session = driver.session();
+  const result = await session.run(
+    'MATCH (actor:Person)-[:ACTED_IN]-(movie:Movie {title: "The Matrix"}) RETURN actor.name AS actorName'
+  );
+  session.close();
+  let listActors : string[] = [];
+  result.records.map((record) => (
+    listActors.push(record.get('actorName'))
+  ));
+  return listActors;
+}
+----
+
+In this function, we execute a cypher query to retrieve all the actors that acted in the movie `The Matrix`, and return their name.
+We then return an array, containing all the actors' names.
+
+### Display data
+
+To display the data, we will have to update the `src/components/Content.tsx` file.
+
+.Content.tsx
+[source, typescript]
+----
+...
+import { setDriver, disconnect, getMatrixActors } from '../utils/Driver'; // <1>
+
+export default function Content() {
+...
+  const [listActors, setListActors] = useState<Array<string>>([]); // <2>
+
+  ...
+// <3>
+  function retrieveMatrixActors() { 
+    getMatrixActors().then((actors) => {
+      setListActors(actors);
+    });
+  };
+
+  ...
+// <4>
+      {!connectionStatus ? (
+        <Button onClick={() => setOpenConnection(true)}>Connect to Neo4j</Button>
+      ) : (
+        <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
+          <Button onClick={retrieveMatrixActors}>Get The Matrix actors</Button>
+          <div>
+            <Typography variant='body-medium'>The Matrix actors:</Typography>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
+              {listActors.length > 0 ? (
+                <ul>
+                  {listActors.map((actor) => (
+                    <li key={actor}>{actor}</li>
+                  ))}
+                </ul>
+              ) : (
+                <Typography variant='body-medium'>No actors found</Typography>
+              )}
+          </div>
+          </div>
+          <Button onClick={() => disconnect().then(() => setConnectionStatus(false))}>Disconnect</Button>
+        </div>
+      )}
+...
+
+----
+
+<1> Import our new function `getMatrixActors` in the existing import statement.
+<2> Create a new state variable to store the list of actors we will retrieve from the database.
+<3> Create a button click handler that will call our `getMatrixActors` function and update the state variable with the result when we click.
+<4> Display the data in a simple list.
+
+## Templates
+This page will contain a set of example applications built using the Needle starter kit. 
+Looking for inspiration on what to build? Check out https://neo4j.com/developer-blog/needle-neo4j-design-system/[this post,window=_blank] on the Neo4j Developer Blog.
+

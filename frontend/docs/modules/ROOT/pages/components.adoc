@@ -1,0 +1,26 @@
+
+# Components 
+
+The Needle Starterkit makes use of the official https://storybook-components-build.appspot.com/?path=/docs/getting-started-welcome--docs[Neo4j Needle,window=_blank] React component library.
+You can use these components together with the higher-order components part of the starter kit.
+
+## Architecture
+The default template consists of the following higher level components:
+
+image::ComponentArchitecture.png[Component Architecture]
+
+
+- The **Header** is the title bar of the page, containing universal components irrespective of the current page's scope. 
+- A **Logo** for the application. Neo4j's logo is used by default.
+- **User** details for the currently connected user.
+- Application-level **Settings**, that are global to the entire app. (e.g. switching between light/dark mode)
+- A dynamic **PageLayout**, which can change based on the user's current view / scope.
+- A **SideNav** that lets the user switch between different application contexts.
+- The page **Content** containing the key functionality for the current context.
+
+## Additional Components
+
+An example **Connection Modal** is available under `src/components/ConnectionModal.tsx`. If your application requires a (direct) Neo4j connection, this modal can be re-used to let users sign in to their Neo4j databases.
+
+
+

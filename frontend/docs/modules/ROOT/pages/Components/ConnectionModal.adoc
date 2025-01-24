@@ -1,0 +1,129 @@
+= ConnectionModal Component
+
+[cols="1a,1a"]
+|===
+| Light | Dark
+
+| image::Components/DesktopConnectionModalLight.png[DesktopConnectionModalLight,width=600,height=600]
+| image::Components/DesktopConnectionModalDark.png[DesktopConnectionModalDark,width=600,height=600]
+|===
+
+The ConnectionModal component is a React component designed to handle the connection setup to a Neo4j database. It provides a user-friendly interface for entering database connection details and displays feedback on the connection attempt. This component is particularly useful in applications requiring a dynamic connection to a Neo4j database.
+
+https://needle-starterkit.graphapp.io/connection-modal-preview[Link to the live preview,window=_blank]
+
+https://github.com/neo4j-labs/neo4j-needle-starterkit/blob/2.0/src/templates/shared/components/ConnectionModal.tsx[Link to the component code,window=_blank]
+
+The connection modal also comes with a dropzone for the user to upload a file containing the connection details. The file can be either an Aura credential file you downloaded when creating an instance, or your own file containing the connection details.
+
+The accepted file format are either `.env` or `.txt` file with the following structure:
+
+[cols="1,2,1"]
+|===
+| Name | Description | Example
+
+| `NEO4J_URI`
+| The URI of the Neo4j database. Ideally you would have the protocol, hostname and port, but all are optional and will be defaulted if not present.
+| neo4j+s://abcd1234.databases.neo4j.io:7687
+| `NEO4J_USERNAME`
+| Your neo4j username
+| neo4j
+| `NEO4J_PASSWORD`
+| Your neo4j password
+| password
+| `NEO4J_DATABASE`
+| The database name
+| neo4j
+|===
+
+Example of a `local.env` file:
+[source,env]
+----
+NEO4J_URI=neo4j://localhost:7687
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=password
+NEO4J_DATABASE=neo4j
+----
+
+== Pre-requisite
+
+- Ensure you have the `@neo4j-ndl` library installed in your project to use this `ConnectionModal` component.
+- Ensure you also import the utils/Driver.tsx as it is used for creating the driver connection to the Neo4j Database.
+
+== Usage
+
+To integrate the ConnectionModal component into your application, follow these steps:
+
+1. Import the component:
+
+[source,jsx]
+----
+import ConnectionModal from './path/to/ConnectionModal';
+----
+
+2. Add state to your parent component to control the modal's visibility and to handle the connection status:
+
+[source,jsx]
+----
+const [isModalOpen, setIsModalOpen] = useState(false);
+const [connectionStatus, setConnectionStatus] = useState(false);
+----
+
+3. Render the `ConnectionModal` component with the required props:
+
+[source,jsx]
+----
+<ConnectionModal
+  open={isModalOpen}
+  setOpenConnection={setIsModalOpen}
+  setConnectionStatus={setConnectionStatus}
+  message={{ type: 'info', content: 'Please enter your database connection details.' }}
+/>
+----
+
+== Component Props
+
+The ConnectionModal component accepts the following props:
+
+[cols="1,2,1"]
+|===
+| Name | Description | Required
+
+| `open`
+| A boolean state indicating whether the modal is open or closed.
+| Yes
+| `setOpenConnection`
+| A function to update the `open` state above.
+| Yes
+| `setConnectionStatus`
+| A function to update the parent component's connection status based on the success or failure of the connection attempt.
+| Yes
+| `message?`
+| An optional `Message` object containing a `type` for styling the banner (success, info, warning, danger, neutral) and a `content` string for the message text.
+| No
+|===
+
+`(Optionnal)` Message object structure:
+
+[source,typescript]
+----
+{
+  type: string; // success | info | warning | danger | neutral
+  content: string; // The message content
+}
+----
+
+== Key components
+
+=== Handling State
+
+The component uses the `useState` hook to manage local state for each connection parameter (protocol, hostname, port, etc.) and the connection message to provide feedback.
+
+=== Submitting the Connection Details
+
+Upon submitting the form:
+
+1. It constructs the connection URI using the selected protocol, hostname, and port.
+2. It calls `setDriver` to attempt the database connection.
+3. Based on the success or failure of `setDriver`, it updates the connection status and potentially closes the modal or displays an error message.
+

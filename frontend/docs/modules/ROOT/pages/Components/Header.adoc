@@ -1,0 +1,186 @@
+= Header Component
+
+[cols="1a,1a"]
+|===
+| Light | Dark
+
+| image::Components/DesktopHeaderLight.png[DesktopHeaderLight,width=600,height=600]
+| image::Components/DesktopHeaderDark.png[DesktopHeaderDark,width=600,height=600]
+|===
+
+The Header component serves as the primary navigation and interaction header in a web application. It incorporates theme toggling, navigation tabs, and optional Neo4j database connection functionality.
+
+https://needle-starterkit.graphapp.io/header-preview[Link to the live preview,window=_blank]
+
+https://github.com/neo4j-labs/neo4j-needle-starterkit/blob/2.0/src/templates/shared/components/Header.tsx[Link to the component code,window=_blank]
+
+== Pre-requisite
+
+- Ensure you have the `@neo4j-ndl` library installed in your project to use this `Header` component.
+- Ensure you also import the User.tsx as it is used for displaying a user profile.
+
+== Usage
+
+To use the Header component in your application, follow these steps:
+
+1. Import the component:
+
+[source,jsx]
+----
+import Header from './path/to/Header';
+----
+
+2. `Optional` Define the navigation items and state management logic for active navigation items and Neo4j connection status:
+
+[source,jsx]
+----
+const navItems = ['Home', 'About', 'Contact'];
+const [activeNavItem, setActiveNavItem] = useState(navItems[0]);
+const [connectNeo4j, setConnectNeo4j] = useState(false);
+const [isConnectionModalOpen, setIsConnectionModalOpen] = useState(false);
+----
+
+3. Render the `Header` component with the required props:
+
+[source,jsx]
+----
+
+//
+<Header
+  title="My Application"
+  navItems={navItems}
+  activeNavItem={activeNavItem}
+  setActiveNavItem={setActiveNavItem}
+  useNeo4jConnect={true}
+  connectNeo4j={connectNeo4j}
+  setConnectNeo4j={setConnectNeo4j}
+  openConnectionModal={() => setIsConnectionModalOpen(true)}
+  userHeader={true}
+/>
+----
+
+== Component Props
+
+The Header component accepts several props for customization and functionality:
+
+[cols="1,2,1"]
+|===
+| Name | Description | Required
+
+| `title`
+| The title/Name of your application, will be displayed in the header.
+| Yes
+| `navItems`
+| The list of navigation items.
+| No
+| `activeNavItem`
+| The navigation item currently active/selected.
+| No
+| `setActiveNavItem`
+| Function to set the active navigation item.
+| No
+| `useNeo4jConnect`
+| Boolean to enable or disable the Neo4j connection feature.
+| No
+| `connectNeo4j`
+| If `useNeo4jConnect` is set to true - Boolean indicating the current connection status to a Neo4j database.
+| No
+| `setConnectNeo4j`
+| If `useNeo4jConnect` is set to true - Function to update the Neo4j connection status.
+| No
+| `openConnectionModal`
+| If `useNeo4jConnect` is set to true - Function to open the connection modal for Neo4j.
+| No
+| `userHeader`
+| Boolean to display or hide the user section in the header.
+| No
+|===
+
+
+== Key components
+
+=== Theme Toggling
+
+The header includes a theme toggle switch, allowing users to switch between light and dark modes. It uses the `ThemeWrapperContext` to access and modify the theme state across the application.
+
+[source, tsx]
+----
+const themeUtils = React.useContext(ThemeWrapperContext);
+const [themeMode, setThemeMode] = useState<string>(themeUtils.colorMode);
+
+const toggleColorMode = () => {
+  setThemeMode((prevThemeMode) => {
+    return prevThemeMode === 'light' ? 'dark' : 'light';
+  });
+  themeUtils.toggleColorMode();
+};
+
+// ...
+
+<IconButton aria-label='Toggle Dark mode' clean size='large' onClick={toggleColorMode}>
+  {themeMode === 'dark' ? (
+    <span role='img' aria-label='sun'>
+      <SunIconOutline />
+    </span>
+  ) : (
+    <span role='img' aria-label='moon'>
+      <MoonIconOutline />
+    </span>
+  )}
+</IconButton>
+----
+
+=== Navigation Tabs
+
+Navigation is handled using the `Tabs` component from `@neo4j-ndl/react`, with each `navItem` rendered as a tab. The active navigation item is highlighted, and changing tabs updates the application's state accordingly.
+
+[source, tsx]
+----
+<section className='flex w-1/3 shrink-0 grow-0 justify-center items-center mb-[-26px]'>
+  <Tabs size='large' fill='underline' onChange={(e) => setActiveNavItem(e)} value={activeNavItem}>
+    {navItems.map((item) => (
+      <Tabs.Tab tabId={item} key={item}>
+        {item}
+      </Tabs.Tab>
+    ))}
+  </Tabs>
+</section>
+----
+
+=== Neo4j Connection
+
+If `useNeo4jConnect` is true, a `Switch` component controls the connection to a Neo4j database. Toggling this switch can trigger a modal for connecting to the database, managed by the `openConnectionModal` prop function.
+
+[source, tsx]
+----
+{useNeo4jConnect ? (
+<Switch
+  checked={connectNeo4j}
+  onChange={(e) => {
+    if (e.target.checked) {
+      openConnectionModal();
+    } else {
+      setConnectNeo4j(false);
+    }
+  }}
+  disabled={false}
+  fluid={true}
+  label={`Connect${connectNeo4j ? 'ed' : ''} to Neo4j`}
+  labelBefore={true}
+/>
+) : null}
+----
+
+=== User Section
+
+An optional user section can be included, rendering a `User` component if `userHeader` is true. This section is designed for user-related actions or information, such as login status or user settings.
+
+[source, tsx]
+----
+{userHeader ? (
+  <div className='hidden md:inline-block'>
+    <User />
+  </div>
+) : null}
+----
+

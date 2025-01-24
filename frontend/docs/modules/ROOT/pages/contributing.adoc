@@ -1,0 +1,14 @@
+# Contributing
+
+Contributions to the project are highly welcomed.
+If you extend the starter kit with your own (reusable) templates/components, consider creating a Pull Request. Ensure you start from the latest release branch, and set the merge base to this branch as well.
+
+For your feature to be accepted, ensure:
+
+- There is a matching https://github.com/neo4j-labs/neo4j-needle-starterkit/issues[issue,window=_blank] on GitHub.
+- Your code is formatted and linted correctly. (See `yarn run lint`).
+- The template/component is well documented in the documentation portal (if applicable).
+
+
+## Feature Requests / Bugs
+If you have a request for a feature, or have found a bug, creating an https://github.com/neo4j-labs/neo4j-needle-starterkit/issues[issue on GitHub,window=_blank] is the best way to reach out.

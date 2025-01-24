@@ -1,0 +1,182 @@
+= Chatbot Component
+
+[cols="1a,1a"]
+|===
+| Desktop Light | Mobile Light
+
+| image::Components/DesktopChatbotLight.png[DesktopChatbotLight,width=600,height=600]
+| image::Components/MobileChatbotLight.png[MobileChatbotLight,width=150,height=150]
+|===
+
+[cols="1a,1a"]
+|===
+| Desktop Dark | Mobile Dark
+
+| image::Components/DesktopChatbotDark.png[DesktopChatbotDark,width=600,height=600]
+| image::Components/MobileChatbotDark.png[MobileChatbotDark,width=150,height=150]
+|===
+
+The `Chatbot` component provides a dynamic and interactive chat interface for users to communicate with an AI chatbot. It renders chat messages between a user and a chatbot, including features like typing simulation for the chatbot's responses and automatic scrolling to the latest message.
+
+https://needle-starterkit.graphapp.io/chat-widget-preview[Link to the live preview,window=_blank]
+
+https://github.com/neo4j-labs/neo4j-needle-starterkit/blob/2.0/src/templates/shared/components/Chatbot.tsx[Link to the component code,window=_blank]
+
+== Pre-requisite
+
+Ensure you have the `@neo4j-ndl` library installed in your project to use this `Chatbot` component.
+
+== Usage
+
+To integrate the `Chatbot` component into your application, you will first need to import it:
+
+[source,tsx]
+----
+import Chatbot from './path/to/Chatbot';
+----
+
+Next, render the `Chatbot` component in your application's component tree, providing the necessary props:
+
+[source,tsx]
+----
+<Chatbot messages={listMessages} />
+----
+
+`listMessages` should be an array of message objects that you want to display initially.
+
+== Component Props
+
+The `Chatbot` component accepts the following props:
+
+[cols="1,2,1"]
+|===
+| Name | Description | Required
+
+| `messages`
+| An array of message objects that the chatbot will render. Each message object should contain `id`, `user`, `message`, and `datetime` fields. An optional `isTyping` boolean can also be included to simulate the chatbot typing a response.
+| Yes
+|===
+
+== Message Object Structure
+
+Each message object in the `messages` array prop should follow this structure:
+
+[source,typescript]
+----
+{
+  id: number; // Unique identifier for the message
+  user: string; // "user" for user messages, "chatbot" for chatbot messages
+  message: string; // The message text
+  datetime: string; // Timestamp of the message
+  isTyping?: boolean; // Optional, simulates typing effect for chatbot messages
+}
+----
+
+== Key components
+
+
+=== Handling State and Effects
+
+The component uses React's `useState` hook to manage:
+
+- `listMessages`: The current list of messages to be displayed.
+- `inputMessage`: The current text input by the user.
+
+It also uses the `useEffect` hook to automatically scroll to the bottom of the message list whenever a new message is added thansk to the `messagesEndRef` reference.
+
+=== Submitting Messages
+
+When a user submits a message:
+
+1. It prevents the default form submission behavior.
+2. It checks if the message is not empty.
+3. It adds the user's message to the `listMessages` state.
+4. It clears the input field.
+5. It simulates a chatbot response using `simulateTypingEffect`.
+
+=== Simulating Typing Effect
+
+The `simulateTypingEffect` function simulates the chatbot typing a response, displaying one character at a time. Once the message is fully "typed out," it updates the message to indicate the chatbot has finished typing.
+
+== Example
+
+Here is a basic example of using the `Chatbot` component with initial messages:
+
+[source,tsx]
+----
+const listMessages = [
+  {
+    id: 1,
+    user: 'user',
+    message: 'Hello, chatbot!',
+    datetime: '01/01/2024 00:00:00',
+  },
+  {
+    id: 2,
+    user: 'chatbot',
+    message: 'Hello! How can I assist you today?',
+    datetime: '01/01/2024 00:00:00',
+  },
+];
+
+<Chatbot messages={listMessages} />
+----
+
+This will render a chat interface with two initial messages, one from the user and one from the chatbot.
+
+== Component Integration
+
+Integrating the `Chatbot` component into an existing application is straightforward. Make sure to provide it with the necessary `messages` prop to initialize the chat history. The component handles user inputs and chatbot responses internally, offering a complete chat interface experience out of the box.
+
+Here is an example if you already have a backend application taking care of generating the chatbot's responses and you want to integrate it with this `Chatbot` component:
+
+First, we will set a new state `gettingResponse` that will indicate us if we are currently fetching a response from the backend:
+
+[source, tsx]
+----
+const [gettingResponse, setGettingResponse] = useState(false);
+---- 
+
+Then, we will define a new function `fetchResponseFromAPI` that will be responsible for fetching the chatbot's response from the backend based on the user's message:
+
+[source, tsx]
+----
+const fetchResponseFromAPI = async () => {
+    setGettingResponse(true);
+    const requestBody = {
+      message: inputMessage
+    };
+
+    try {
+      const response = await fetch(`<URI_TO_YOUR_BACKEND_API>`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+      const data = await response.json();
+      setGettingResponse(false);
+      return data.content;
+    } catch (error) {
+      console.error("API call failed:", error);
+      return "Sorry, something went wrong.";
+    } finally {
+      setGettingResponse(false);
+    }
+  };
+----
+
+WARNING: Ideally you will want to consider using a framework to manage the states, caching and hooks like `tanstack/react-query` for example as well as adding an authentication and authorization to your backend API calls
+
+Then all we need to do is to call this function when the user submits a message, retrieve the response, and simulate the typing effect:
+In our `handleSubmit` function:
+
+[source, tsx]
+----
+const chatbotReply = await fetchResponseFromAPI();
+simulateTypingEffect(chatbotReply);
+----
+
+https://github.com/neo4j-labs/neo4j-needle-starterkit/blob/development-openaichatbot/src/templates/shared/components/Chatbot.tsx[The full example can be found here,window=_blank]

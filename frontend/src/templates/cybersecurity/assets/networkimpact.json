@@ -1,0 +1,76 @@
+{
+    "ListItems": [
+        {
+            "Type": "Linux",
+            "Name": "nginx-edge",
+            "Version": "Debian 11.2",
+            "Status": "Up"
+        },
+        {
+            "Type": "Linux",
+            "Name": "db-mysql01",
+            "Version": "Ubuntu 20.04.3 LTS",
+            "Status": "Down"
+        },
+        {
+            "Type": "Windows",
+            "Name": "windev2022",
+            "Version": "Windows Server 2022 - b21H2",
+            "Status": "Needs updates"
+        },
+        {
+            "Type": "Linux",
+            "Name": "cache-redis",
+            "Version": "Alpine Linux 3.14",
+            "Status": "CVE-2022-1921"
+        },
+        {
+            "Type": "Linux",
+            "Name": "build-jenkins",
+            "Version": "CentOS 8",
+            "Status": "Up"
+        },
+        {
+            "Type": "Windows",
+            "Name": "ad-primary",
+            "Version": "Windows Server 2016 - b1607",
+            "Status": "Up"
+        },
+        {
+            "Type": "Linux",
+            "Name": "monitoring-grafana",
+            "Version": "Fedora 34",
+            "Status": "Down"
+        },
+        {
+            "Type": "Linux",
+            "Name": "backup-veeam",
+            "Version": "RHEL 8.4",
+            "Status": "Up"
+        },
+        {
+            "Type": "Windows",
+            "Name": "fileserver01",
+            "Version": "Windows Server 2019 - b1809",
+            "Status": "Up"
+        },
+        {
+            "Type": "Linux",
+            "Name": "prod-k8s-master",
+            "Version": "Ubuntu 22.04 LTS",
+            "Status": "Needs updates"
+        },
+        {
+            "Type": "Linux",
+            "Name": "dev-docker01",
+            "Version": "CentOS 7.9",
+            "Status": "Needs updates"
+        },
+        {
+            "Type": "Windows",
+            "Name": "sqlserver-prod",
+            "Version": "Windows Server 2019 - b1809",
+            "Status": "Up"
+        }
+    ]
+}

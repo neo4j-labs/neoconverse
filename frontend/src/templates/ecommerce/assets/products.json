@@ -1,0 +1,62 @@
+{
+    "listProducts": [
+        {
+            "id": 1,
+            "name": "Product 1",
+            "price": 999.99,
+            "image": "./assets/ecommerce/product1.png",
+            "desc1": "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Facere corrupti odit modi adipisci facilis repellendus ab, officiis soluta beatae quaerat iusto fuga sed tenetur dicta maiores aut est eaque libero?",
+            "desc2": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo id suscipit beatae incidunt, fugiat ipsum nisi consequatur officiis, debitis deserunt aspernatur praesentium quo doloremque soluta quibusdam quam sunt laborum corrupti.",
+            "defaultData": [
+                {
+                  "CPU": 1,
+                  "Memory": "2Gib",
+                  "Details": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo id suscipit beatae incidunt."
+                },
+                {
+                  "CPU": 2,
+                  "Memory": "4Gib",
+                  "Details": "Officiis eos illo vitae accusamus! Doloremque sapiente ducimus ullam. Assumenda ad sapiente deleniti!"
+                },
+                {
+                  "CPU": 4,
+                  "Memory": "16Gib",
+                  "Details": "Provident ipsum earum, officiis obcaecati labore quisquam cum officia delectus minus dolor. Necessitatibus nemo illo pariatur velit voluptatibus cupiditate quas?"
+                }
+              ]
+        },
+        {
+            "id": 2,
+            "name": "Product 2",
+            "price": 99.99,
+            "image": "./assets/img/ecommerce/product2.png",
+            "desc1": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati."
+        },
+        {
+            "id": 3,
+            "name": "Product 3",
+            "price": 9.99,
+            "image": "./assets/ecommerce/product3.png",
+            "desc1": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati."
+        },
+        {
+            "id": 4,
+            "name": "Product 4",
+            "price": 59.99,
+            "image": "./assets/ecommerce/product4.png",
+            "desc1": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati."
+        },
+        {
+            "id": 1,
+            "name": "Product 1",
+            "price": 999.99,
+            "image": "./assets/product1.png"
+        },
+        {
+            "id": 1,
+            "name": "Product 1",
+            "price": 999.99,
+            "image": "./assets/product1.png"
+        }
+    ]
+}

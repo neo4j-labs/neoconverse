@@ -1,0 +1,61 @@
+= PageNotFoundPage Component
+
+[cols="1a,1a"]
+|===
+| Light | Dark
+
+| image::Components/DesktopPageNotFoundLight.png[DesktopPageNotFoundLight,width=600,height=600]
+| image::Components/DesktopPageNotFoundDark.png[DesktopPageNotFoundDark,width=600,height=600]
+|===
+
+The `PageNotFoundPage` component is a React component designed to display a user-friendly message when a page is not found (404 error). It provides a visual indication that the requested page is unavailable and offers a button to navigate back to the previous page.
+
+https://needle-starterkit.graphapp.io/notfound[Link to the live preview,window=_blank]
+
+https://github.com/neo4j-labs/neo4j-needle-starterkit/blob/2.0/src/templates/shared/components/PageNotFound.tsx[Link to the component code,window=_blank]
+
+== Pre-requisite
+
+- Ensure you have the `@neo4j-ndl` library installed in your project to use this `PageNotFound` component.
+
+== Usage
+
+To integrate the `PageNotFoundPage` component into your application, ensure it is part of your routing configuration:
+
+1. Import the component:
+
+[source,jsx]
+----
+import PageNotFoundPage from './path/to/PageNotFoundPage';
+----
+
+2. Add a route for the component in your router setup. This is typically done using a catch-all route:
+
+[source,jsx]
+----
+import { Routes, Route } from 'react-router-dom';
+
+<Routes>
+  // ... All your other routes MUST be before this one
+  <Route path="*" element={<PageNotFoundPage />} />
+</Routes>
+----
+
+== Component Props
+
+The `PageNotFoundPage` component does not accept any props.
+
+== Key components
+
+=== Navigation Hook
+
+The component uses the `useNavigate` hook to programmatically navigate the user back to the previous page:
+
+[source,jsx]
+----
+const navigate = useNavigate();
+
+<Button onClick={() => navigate(-1)}>Go back</Button>
+----
+
+This makes use of the browser's history stack to return the user to where they came from.

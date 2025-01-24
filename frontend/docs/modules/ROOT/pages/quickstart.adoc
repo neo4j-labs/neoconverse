@@ -1,0 +1,43 @@
+# Quickstart
+
+If you want to try it without installing it locally, you can access https://needle-starterkit.graphapp.io[our self-hosted,window=_blank] version.
+
+Alternatively, if you want to run it locally or within your self-managed environment, please follow the steps below.
+
+## Prerequisites
+Running the StarterKit requires you to have **node.js** and **yarn** installed.
+
+If you do not have these installed:
+
+1. https://nodejs.org/en/download[Install node.js,window=_blank] for your operating system. The node installation will include `npm`. 
+2. Use `npm` to install `yarn` as described https://classic.yarnpkg.com/lang/en/docs/install/[here,window=_blank]. 
+
+
+## Install & Run
+Download the latest version of the starter kit from the https://github.com/neo4j-labs/neo4j-needle-starterkit[Github Repository,window=_blank]:
+
+
+```shell
+git clone git@github.com:neo4j-labs/neo4j-needle-starterkit.git
+```
+
+Navigate to the folder you just cloned and run the following commands to install and run the development server:
+
+```shell
+cd neo4j-needle-starterkit
+yarn install
+yarn run dev
+```
+
+If all is successful, you will be shown the following message:
+
+```shell
+  VITE v4.5.1  ready in 125 ms
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: use --host to expose
+  ➜  press h to show help
+```
+
+## Next steps
+After you have the StarterKit app up-and-running, you can explore the different templates and components (see the relevant section for further details and documentation) or implement your own custom components, templates and logic.

@@ -1,0 +1,90 @@
+= Movie Recommendations
+
+image::Templates/FeaturedMovie.png[Movie Recommendations,align="center"]
+
+== Introduction
+
+The Movie Recommendations template is an interactive platform designed to suggest movies based on users' preferences and viewing habits. It aim to act as a strong foundation for building your recommendation engine and provide personalized movie suggestions.
+
+This template is the only one (`currently`) providing not only a static dataset but also allow you to connect to your Neo4j Database to retrieve your data and render it in the template.
+
+CAUTION: This feature allowing you to connect and retrieve data from your database into the template is experimental (hence only available in this template). It is designed to work with the https://github.com/neo4j-graph-examples/recommendations[Recommendation dataset,window=_blank]. If you are using a different dataset or data model, you may need to modify the cypher queries and/or the data structure to fit your needs. 
+
+https://needle-starterkit.graphapp.io/movie-preview[Link to the live preview,window=_blank]
+
+https://github.com/neo4j-labs/neo4j-needle-starterkit/blob/2.0/src/templates/movie[Link to the template code,window=_blank]
+
+== Documentation
+
+=== Layout Architecture
+
+image::Templates/MovieArchitecture.png[MovieArchitecture,align="center"]
+
+The template entry is in the `Home.tsx` component, which orchestrates the user interactions and data retrieval from the static JSON file or your Neo4j database.
+
+Key components include:
+
+- `Header` for navigation and database connection management.
+- `ConnectionModal` for handling database connection configurations.
+- `Content` for presenting movie recommendations through interactive UI elements.
+
+=== Code Snippets
+
+.Fetching and Displaying Recommendations
+
+[source,tsx]
+----
+useEffect(() => {
+  const fetchData = async () => {
+    setLoading({ main: true, similarGenre: true, otherUsers: true });
+    if (useReco) {
+      const { uri, user, password } = JSON.parse(localStorage.getItem('neo4j-connection') ?? '') ?? {};
+      setDriver(uri, user, password);
+      await Promise.all([
+        fetchMovies(queryMainMovie).then(movies => setMainMovie(movies || [])),
+        fetchMovies(similarByGenre).then(movies => setRecoSimilarGenre(movies || [])),
+        fetchMovies(queryOtherUsersAlsoWatched).then(movies => setRecoOtherUsers(movies || [])),
+      ]);
+      setLoading({ main: false, similarGenre: false, otherUsers: false });
+    }
+  };
+
+  fetchData();
+}, [useReco]);
+----
+
+.Displaying Error Messages
+
+[source,tsx]
+----
+{recoError ? (
+  <Flex flexDirection='row' justifyContent='center' alignItems='center'>
+    <Typography variant='h1'>Data error</Typography>
+    <Typography variant='body-medium'>
+      An error occurred while fetching recommendations data. Please ensure you are connected to a Neo4j Database.
+    </Typography>
+  </Flex>
+) : (
+  <Content mainMovie={mainMovie} recoSimilarGenre={recoSimilarGenre} recoOtherUsers={recoOtherUsers} />
+)}
+----
+
+=== Dataset/Connect to a Neo4j DB
+
+By default, the application uses a static dataset `movies.json` for demonstration purposes. The template supports dynamic switching between the static dataset and live data from your Neo4j database to give you a more real view of what the template could look like with your data.
+
+.Connection to Neo4j Database:
+
+[source,tsx]
+----
+<ConnectionModal
+  open={isConnectionModalOpen}
+  setOpenConnection={setIsConnectionModalOpen}
+  setConnectionStatus={setUseReco}
+  message={{
+    type: 'warning',
+    content: 'Ensure you connect to a Neo4j database containing the Recommendation dataset.',
+  }}
+/>
+----
+

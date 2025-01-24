@@ -1,0 +1,134 @@
+{
+    "listMovies": [
+        {
+            "id": 1,
+            "genres": ["Genre1", "Genre2", "Genre3"],
+            "languages": ["English"],
+            "title": "Movie1",
+            "plot": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati. Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati. Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati. Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati. Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati. Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati. Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati. Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati. Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati. Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati.",
+            "poster": "./assets/movie/movie1.png",
+            "year": "2024",
+            "imdbRating": "10"
+        },
+        {
+            "id": 2,
+            "genres": ["Genre1", "Genre2", "Genre3"],
+            "languages": ["English"],
+            "title": "Movie2",
+            "plot": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati.",
+            "poster": "./assets/movie/movie2.png",
+            "year": "2024",
+            "imdbRating": "10"
+        },
+        {
+            "id": 3,
+            "genres": ["Genre1", "Genre2", "Genre3"],
+            "languages": ["English"],
+            "title": "Movie3",
+            "plot": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati.",
+            "poster": "./assets/movie/movie3.png",
+            "year": "2024",
+            "imdbRating": "10"
+        },
+        {
+            "id": 4,
+            "genres": ["Genre1", "Genre2", "Genre3"],
+            "languages": ["English"],
+            "title": "Movie4",
+            "plot": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati.",
+            "poster": "./assets/movie/movie4.png",
+            "year": "2024",
+            "imdbRating": "10"
+        },
+        {
+            "id": 5,
+            "genres": ["Genre1", "Genre2", "Genre3"],
+            "languages": ["English"],
+            "title": "Movie5",
+            "plot": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati.",
+            "poster": "./assets/movie/movie5.png",
+            "year": "2024",
+            "imdbRating": "10"
+        },
+        {
+            "id": 6,
+            "genres": ["Genre1", "Genre2", "Genre3"],
+            "languages": ["English"],
+            "title": "Movie6",
+            "plot": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati.",
+            "poster": "./assets/movie/movie6.png",
+            "year": "2024",
+            "imdbRating": "10"
+        },
+        {
+            "id": 7,
+            "genres": ["Genre1", "Genre2", "Genre3"],
+            "languages": ["English"],
+            "title": "Movie7",
+            "plot": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati.",
+            "poster": "./assets/movie/movie7.png",
+            "year": "2024",
+            "imdbRating": "10"
+        },
+        {
+            "id": 8,
+            "genres": ["Genre1", "Genre2", "Genre3"],
+            "languages": ["English"],
+            "title": "Movie8",
+            "plot": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati.",
+            "poster": "./assets/movie/movie8.png",
+            "year": "2024",
+            "imdbRating": "10"
+        },
+        {
+            "id": 9,
+            "genres": ["Genre1", "Genre2", "Genre3"],
+            "languages": ["English"],
+            "title": "Movie9",
+            "plot": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati.",
+            "poster": "./assets/movie/movie9.png",
+            "year": "2024",
+            "imdbRating": "10"
+        },
+        {
+            "id": 10,
+            "genres": ["Genre1", "Genre2", "Genre3"],
+            "languages": ["English"],
+            "title": "Movie10",
+            "plot": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati.",
+            "poster": "./assets/movie/movie10.png",
+            "year": "2024",
+            "imdbRating": "10"
+        },
+        {
+            "id": 11,
+            "genres": ["Genre1", "Genre2", "Genre3"],
+            "languages": ["English"],
+            "title": "Movie11",
+            "plot": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati.",
+            "poster": "./assets/movie/movie11.png",
+            "year": "2024",
+            "imdbRating": "10"
+        },
+        {
+            "id": 12,
+            "genres": ["Genre1", "Genre2", "Genre3"],
+            "languages": ["English"],
+            "title": "Movie12",
+            "plot": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati.",
+            "poster": "./assets/movie/movie12.png",
+            "year": "2024",
+            "imdbRating": "10"
+        },
+        {
+            "id": 13,
+            "genres": ["Genre1", "Genre2", "Genre3"],
+            "languages": ["English"],
+            "title": "Movie13",
+            "plot": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque sunt eaque eveniet reprehenderit vero velit debitis facere beatae obcaecati.",
+            "poster": "./assets/movie/movie13.png",
+            "year": "2024",
+            "imdbRating": "10"
+        }
+    ]
+}
