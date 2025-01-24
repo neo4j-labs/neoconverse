@@ -1,7 +1,7 @@
 # NeoConverse
 A GenAI copilot experience for your neo4j database
 
-![NeoConverse](./public/neoconverse.png)
+![NeoConverse](./neoconverseold/public/neoconverse.png)
 
 NeoConverse allows you to interact with your data in neo4j graph database in plain english, It provides a chat experience and enables users add your own neo4j database and interact with it
 
