@@ -10,7 +10,9 @@ export const Events = {
     AddAgent: "NEOCONVERSE_ADD_AGENT",
     EditAgent: "NEOCONVERSE_EDIT_AGENT",
     RemoveAgent: "NEOCONVERSE_REMOVE_AGENT",
-    AskQuestion: "NEOCONVERSE_ASK_QUESTION"
+    AskQuestion: "NEOCONVERSE_ASK_QUESTION",
+    DownloadAgentData: "download_agent_data",
+    UploadAgentData:  "upload_agent_data"
 }
 
 export const track = (eventName, eventParams) => {

@@ -22,6 +22,7 @@ import { Props } from 'next/script';
 import { Stack } from '@mui/system';
 import { getAgents, saveLocalAgent, removeLocalAgent } from '../../agents/agentRegistry';
 import { Tool, Property } from '../../lib/type';
+import AgentDataButtons from '../../agents/agentDataButtons';
 
 const AgentList = (props) => {
 
@@ -214,6 +215,7 @@ const AgentList = (props) => {
                         </Button>
                 </div>
             </Stack>
+            <AgentDataButtons />
             <AgentDialog open={isDialogOpen} agentData = {agentData} onSave={handleSaveAgentData} onClose={handleCloseDialog}></AgentDialog>
             <Accordion sx={{ marginTop: '4px', '&.Mui-expanded': { marginTop: '4px' }}} >
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
