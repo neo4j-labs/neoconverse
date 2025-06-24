@@ -68,6 +68,45 @@ export function downloadAgentData() {
 }
 
 /**
+ * Validates that the agent data meets required criteria
+ * @param dataArray The array of agent data to validate
+ * @returns An object with validation result and any error message
+ */
+function validateAgentData(dataArray) {
+  // Check that the data is an array
+  if (!Array.isArray(dataArray)) {
+    return {
+      isValid: false,
+      error: 'Invalid data format. Expected an array.'
+    };
+  }
+
+  // Check that each agent has title === key
+  for (let i = 0; i < dataArray.length; i++) {
+    const agent = dataArray[i];
+
+    // Check that both title and key exist
+    if (!agent.title || !agent.key) {
+      return {
+        isValid: false,
+        error: `Agent at index ${i} is missing required title or key field.`
+      };
+    }
+
+    // Check that title equals key
+    if (agent.title !== agent.key) {
+      return {
+        isValid: false,
+        error: `"Agent "${agent.title}" has title and key that don't match. Title: "${agent.title}", Key: "${agent.key}. title and key values must match"`
+      };
+    }
+  }
+
+  return { isValid: true };
+}
+
+
+/**
  * Uploads and imports agent data from a JSON file
  * @param file The JSON file to import
  * @returns Promise that resolves when the import is complete
@@ -80,9 +119,10 @@ export function uploadAgentData(file: File): Promise<void> {
       try {
         const dataArray = JSON.parse(event.target?.result as string);
 
-        // Validate that the data is an array
-        if (!Array.isArray(dataArray)) {
-          reject(new Error('Invalid data format. Expected an array.'));
+        // Validate the agent data
+        const validation = validateAgentData(dataArray);
+        if (!validation.isValid) {
+          reject(new Error(validation.error));
           return;
         }
 
@@ -97,10 +137,11 @@ export function uploadAgentData(file: File): Promise<void> {
     };
 
     reader.onerror = () => {
-      reject(new Error('Error reading file'));
+      reject(new Error('Error reading the file.'));
     };
 
     reader.readAsText(file);
   });
 }
+
 
