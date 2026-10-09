@@ -1,4 +1,6 @@
 # NeoConverse
+
+> This is an experimental Neo4j Labs project and not part of Neo4j's supported product lineup. See the [Neo4j Labs disclaimer](./LABS_DISCLAIMER.txt).
 A GenAI copilot experience for your neo4j database
 
 ![NeoConverse](./public/neoconverse.png)
